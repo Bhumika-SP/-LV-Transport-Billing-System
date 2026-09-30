@@ -2,7 +2,8 @@ import { PrismaClient } from '@prisma/client';
 import { env } from '../config/env.js';
 
 export const prisma = new PrismaClient({
-  log: env.isProduction ? ['error'] : ['warn', 'error'],
+  // Tests deliberately trigger constraint errors; keep their output clean.
+  log: env.isTest ? [] : env.isProduction ? ['error'] : ['warn', 'error'],
 });
 
 /** Lightweight connectivity probe used by the health check. */

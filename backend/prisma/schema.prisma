@@ -106,6 +106,9 @@ model User {
   driverAssignmentsCreated   DriverAssignment[]  @relation("DriverAssignmentCreatedBy")
   companySettlementsCreated  CompanySettlement[] @relation("CompanySettlementCreatedBy")
   companySettlementsReceived CompanySettlement[] @relation("CompanySettlementReceivedBy")
+  tripsCreated               Trip[]              @relation("TripCreatedBy")
+  tripsUpdated               Trip[]              @relation("TripUpdatedBy")
+  tripsCancelled             Trip[]              @relation("TripCancelledBy")
 
   @@index([roleId])
   @@index([status])
@@ -179,6 +182,7 @@ model Company {
   createdBy          User?               @relation("CompanyCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   vehicleAssignments VehicleAssignment[]
   settlements        CompanySettlement[]
+  trips              Trip[]
 
   @@index([status])
   @@map("companies")
@@ -207,6 +211,7 @@ model Driver {
 
   createdBy   User?              @relation("DriverCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   assignments DriverAssignment[]
+  trips       Trip[]
 
   @@index([status])
   @@index([fullName])
@@ -227,6 +232,8 @@ model VehicleType {
   createdBy User?             @relation("VehicleTypeCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   rates     VehicleTypeRate[]
   vehicles  Vehicle[]
+
+  trips Trip[]
 
   @@map("vehicle_types")
 }
@@ -251,6 +258,7 @@ model VehicleTypeRate {
   vehicleType VehicleType @relation(fields: [vehicleTypeId], references: [id], onDelete: Restrict)
   createdBy   User?       @relation("RateCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   cancelledBy User?       @relation("RateCancelledBy", fields: [cancelledById], references: [id], onDelete: SetNull)
+  trips       Trip[]
 
   @@index([vehicleTypeId, status, effectiveFrom])
   @@map("vehicle_type_rates")
@@ -282,6 +290,8 @@ model Vehicle {
   createdBy          User?               @relation("VehicleCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   companyAssignments VehicleAssignment[]
   driverAssignments  DriverAssignment[]
+
+  trips Trip[]
 
   @@index([vehicleTypeId])
   @@index([status])
@@ -375,4 +385,85 @@ model CompanySettlement {
   @@index([settlementMonth])
   @@index([status])
   @@map("company_settlements")
+}
+
+// ============================================================
+// Phase 5 — Trips
+// ============================================================
+
+/// How total KM was obtained (spec §16).
+enum KmSource {
+  START_END
+  DIRECT
+}
+
+enum TripSource {
+  MANUAL
+  IMPORT
+}
+
+enum TripStatus {
+  ACTIVE
+  CANCELLED
+}
+
+/// A trip, priced as TOTAL KM × the vehicle type's rate on the trip date (spec §17).
+/// The vehicle type, rate row and rate value used are stored on the trip so historical
+/// earnings never change when rates change; only an explicit, audited recalculation does.
+model Trip {
+  id              Int        @id @default(autoincrement())
+  companyId       Int        @map("company_id")
+  driverId        Int        @map("driver_id")
+  vehicleId       Int        @map("vehicle_id")
+  /// Snapshot of the vehicle's type when the trip was priced.
+  vehicleTypeId   Int        @map("vehicle_type_id")
+  tripDate        DateTime   @map("trip_date") @db.Date
+  /// "YYYY-MM", derived from tripDate.
+  settlementMonth String     @map("settlement_month") @db.Char(7)
+  /// Company's own trip id; unique per company when present.
+  externalTripId  String?    @map("external_trip_id") @db.VarChar(100)
+  tripReference   String?    @map("trip_reference") @db.VarChar(100)
+  pickup          String?    @db.VarChar(255)
+  dropLocation    String?    @map("drop_location") @db.VarChar(255)
+  startKm         Decimal?   @map("start_km") @db.Decimal(12, 2)
+  endKm           Decimal?   @map("end_km") @db.Decimal(12, 2)
+  totalKm         Decimal    @map("total_km") @db.Decimal(12, 2)
+  kmSource        KmSource   @map("km_source")
+  rateId          Int        @map("rate_id")
+  ratePerKm       Decimal    @map("rate_per_km") @db.Decimal(10, 2)
+  earnings        Decimal    @db.Decimal(15, 2)
+  source          TripSource @default(MANUAL)
+  /// Import batch (FK added with the bulk-import module in Phase 6).
+  importId        Int?       @map("import_id")
+  status          TripStatus @default(ACTIVE)
+  cancelReason    String?    @map("cancel_reason") @db.VarChar(500)
+  cancelledAt     DateTime?  @map("cancelled_at")
+  cancelledById   Int?       @map("cancelled_by_id")
+  notes           String?    @db.Text
+  /// Extensible company-specific fields (e.g. unmapped import columns).
+  extra           Json?
+  createdById     Int?       @map("created_by_id")
+  updatedById     Int?       @map("updated_by_id")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+
+  company     Company         @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  driver      Driver          @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  vehicle     Vehicle         @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  vehicleType VehicleType     @relation(fields: [vehicleTypeId], references: [id], onDelete: Restrict)
+  rate        VehicleTypeRate @relation(fields: [rateId], references: [id], onDelete: Restrict)
+  createdBy   User?           @relation("TripCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy   User?           @relation("TripUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  cancelledBy User?           @relation("TripCancelledBy", fields: [cancelledById], references: [id], onDelete: SetNull)
+
+  @@unique([companyId, externalTripId])
+  @@index([companyId, tripDate])
+  @@index([driverId, tripDate])
+  @@index([vehicleId, tripDate])
+  @@index([tripDate])
+  @@index([settlementMonth, driverId])
+  @@index([status])
+  @@index([rateId])
+  @@index([importId])
+  @@map("trips")
 }

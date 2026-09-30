@@ -13,6 +13,7 @@ import DataTable from '../../components/ui/DataTable';
 import { ErrorState, LoadingState } from '../../components/ui/States';
 import Tabs from '../../components/ui/Tabs';
 import { PERMISSIONS } from '../../config/permissions';
+import TripTable from '../trips/TripTable';
 import { get } from '../../lib/api';
 import { formatDate, formatDateTime } from '../../lib/format';
 import DriverFormModal from './DriverFormModal';
@@ -163,7 +164,7 @@ export default function DriverDetailPage() {
               </div>
             ),
           },
-          { key: 'trips', label: 'Trips', content: <PhasePlaceholder what="Trips" phase={5} /> },
+          { key: 'trips', label: 'Trips', content: <TripTable fixed={{ driverId: id }} /> },
           {
             key: 'earnings',
             label: 'Earnings',

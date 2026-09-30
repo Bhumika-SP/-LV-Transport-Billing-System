@@ -25,11 +25,19 @@ LV PROFIT = ACTUAL COMPANY AMOUNT RECEIVED − TOTAL FINALIZED DRIVER SETTLEMENT
 ## R2. Trip earnings (Phase 5)
 
 ```
-TRIP EARNINGS = TOTAL KM × VEHICLE-TYPE RATE EFFECTIVE ON THE TRIP DATE
+TRIP EARNINGS = TOTAL KM × VEHICLE-TYPE RATE EFFECTIVE ON THE TRIP DATE   (rounded half-up to paise)
 ```
 
-- KM source is either `START_END` (total = end − start, and end ≥ start) or `DIRECT` (total taken from source). KM is never negative.
-- The rate used and the rate per km are stored on the trip. Later rate changes never alter existing trips. Recalculation is an explicit, authorized, audited action.
+- **KM:** `START_END` gives total = end − start (end ≥ start). `DIRECT` gives total as entered. KM is never negative, at most 2 decimals, and zero is allowed. The method is stored (`km_source`).
+- **Rate lookup:** vehicle → its vehicle type → the ACTIVE rate effective on the trip date. No rate means the trip is rejected (`RATE_NOT_FOUND`).
+- **Frozen values:** each trip stores `vehicle_type_id`, `rate_id`, `rate_per_km` and `earnings`. New or cancelled rates **never** change existing trips.
+- **Editing:** changing KM or text keeps the stored rate. Changing the trip date or vehicle applies the rate for the new date, as for a new trip.
+- **Recalculation:** only an explicit Admin action (single trip or vehicle type + date range), with a reason, audited with old and new values. It uses the vehicle's current type and the rate currently effective on the trip date.
+- **Uniqueness:** an external trip ID is unique per company (DB constraint).
+- **Trip date:** cannot be in the future (IST). Settlement month = the trip date's `YYYY-MM`.
+- **Assignment consistency:** a vehicle not assigned to the company, or a driver not assigned to the vehicle, on the trip date produces a **warning**, not an error (A5).
+- **Cancellation:** trips are cancelled with a reason (never deleted) and excluded from all totals.
+- **Single source:** the formula lives only in `trip-calculations.js`. The UI preview calls `POST /trips/preview`.
 
 ## R3. Rate history (Phase 3)
 

@@ -8,6 +8,7 @@ import driversRoutes from '../modules/drivers/drivers.routes.js';
 import ratesRoutes from '../modules/rates/rates.routes.js';
 import rolesRoutes from '../modules/roles/roles.routes.js';
 import settingsRoutes from '../modules/settings/settings.routes.js';
+import tripsRoutes from '../modules/trips/trips.routes.js';
 import usersRoutes from '../modules/users/users.routes.js';
 import vehicleTypesRoutes from '../modules/vehicle-types/vehicle-types.routes.js';
 import vehiclesRoutes from '../modules/vehicles/vehicles.routes.js';
@@ -36,5 +37,6 @@ api.use('/vehicles', vehiclesRoutes);
 api.use('/assignments', assignmentsRoutes);
 
 api.use('/company-settlements', companySettlementsRoutes);
+api.use('/trips', tripsRoutes);
 
 export default api;

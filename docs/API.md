@@ -155,6 +155,28 @@ Correct: `company_settlement.correct` (Admin). Every change is audited. Payment 
 | POST   | `/company-settlements/:id/revert`  | [correct] RECEIVED → PENDING, clears receipt fields. `{ reason }`                                                                                                                                                                          |
 | DELETE | `/company-settlements/:id`         | [correct] PENDING only. `{ reason }`. RECEIVED settlements cannot be deleted                                                                                                                                                               |
 
+### Trips — `/api/trips` (Phase 5)
+
+View: `trip.view` (all roles). Create/edit/cancel/preview: `trip.manage` (Admin, Biller).
+Recalculate: `trip.recalculate` (Admin).
+
+Trip body: `{ companyId, driverId, vehicleId, tripDate, kmSource: "START_END"|"DIRECT", startKm, endKm | totalKm, externalTripId?, tripReference?, pickup?, dropLocation?, notes? }`.
+
+| Method | Path                     | Notes                                                                                                                                                                                                                        |
+| ------ | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/trips`                 | Filters `search` (external ID, reference, pickup, drop), `companyId`, `driverId`, `vehicleId`, `vehicleTypeId`, `status`, `source`, `month`, `fromDate`/`toDate`. Sort `tripDate` (desc), `totalKm`, `earnings`, `createdAt` |
+| GET    | `/trips/summary`         | Same filters → `{ tripCount, totalKm, totalEarnings }` over **ACTIVE** trips only                                                                                                                                            |
+| POST   | `/trips/preview`         | Trip body → `{ vehicleType, rate, totalKm, earnings, warnings }`. Nothing is saved; used by the entry form                                                                                                                   |
+| POST   | `/trips`                 | → `{ trip, warnings }`. 422 `RATE_NOT_FOUND` if no rate on the trip date. 409 on a duplicate `externalTripId` for the company. 400 for bad KM (`endKm` < `startKm`, negative) or a future date                               |
+| GET    | `/trips/:id`             | Includes the rate row used (`rate`), and created/updated/cancelled by                                                                                                                                                        |
+| PATCH  | `/trips/:id`             | ACTIVE only. The stored rate is kept unless `tripDate` or `vehicleId` changes, in which case the rate for the new date applies                                                                                               |
+| POST   | `/trips/:id/cancel`      | `{ reason }`. Kept for history and excluded from totals                                                                                                                                                                      |
+| POST   | `/trips/:id/recalculate` | [Admin] `{ reason }`. Re-applies the rate effective on the trip date → `{ trip, changed }`. Audited `RECALCULATE` with old and new values                                                                                    |
+| POST   | `/trips/recalculate`     | [Admin] `{ vehicleTypeId, fromDate, toDate, companyId?, reason }` → `{ examined, changed, unchanged }`. All-or-nothing                                                                                                       |
+
+Rate responses: `POST /rates` also returns `tripsOnPreviousRate` (trips dated on/after the new rate still
+priced with the superseded one). `POST /rates/:id/cancel` returns `{ rate, tripsUsingRate }`.
+
 ### Planned modules (spec §61)
 
 `/api/auth`, `/api/users`, `/api/companies`, `/api/drivers`, `/api/vehicles`,

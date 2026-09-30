@@ -13,6 +13,7 @@ import DataTable from '../../components/ui/DataTable';
 import { ErrorState, LoadingState } from '../../components/ui/States';
 import Tabs from '../../components/ui/Tabs';
 import { PERMISSIONS } from '../../config/permissions';
+import TripTable from '../trips/TripTable';
 import { get } from '../../lib/api';
 import { formatDate, formatDateTime } from '../../lib/format';
 import CompanySettlementTable from '../company-settlements/CompanySettlementTable';
@@ -171,7 +172,7 @@ export default function CompanyDetailPage() {
             label: 'Settlement History',
             content: <CompanySettlementTable companyId={id} />,
           },
-          { key: 'trips', label: 'Trips', content: <PhasePlaceholder what="Trips" phase={5} /> },
+          { key: 'trips', label: 'Trips', content: <TripTable fixed={{ companyId: id }} /> },
           { key: 'drivers', label: 'Drivers', content: <CompanyDrivers companyId={id} /> },
           { key: 'vehicles', label: 'Vehicles', content: <CompanyVehicles companyId={id} /> },
           {

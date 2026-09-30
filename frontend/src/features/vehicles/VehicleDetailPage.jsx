@@ -13,6 +13,7 @@ import DataTable from '../../components/ui/DataTable';
 import { ErrorState, LoadingState } from '../../components/ui/States';
 import Tabs from '../../components/ui/Tabs';
 import { PERMISSIONS } from '../../config/permissions';
+import TripTable from '../trips/TripTable';
 import { get } from '../../lib/api';
 import { formatDate, formatDateTime, formatINR } from '../../lib/format';
 import RateHistoryTable from '../vehicle-types/RateHistoryTable';
@@ -214,7 +215,7 @@ export default function VehicleDetailPage() {
             ),
           },
           { key: 'assignments', label: 'Assignments', content: <Assignments vehicleId={id} /> },
-          { key: 'trips', label: 'Trips', content: <PhasePlaceholder what="Trips" phase={5} /> },
+          { key: 'trips', label: 'Trips', content: <TripTable fixed={{ vehicleId: id }} /> },
           {
             key: 'expenses',
             label: 'Fuel / Toll / Maintenance / EMI',

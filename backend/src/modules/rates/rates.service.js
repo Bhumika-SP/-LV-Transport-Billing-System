@@ -125,13 +125,21 @@ export async function createRate(
       newValue: rate,
       req,
     });
-    return { rate, closedPrevious };
+    // Trips already priced with the superseded rate but dated on/after the new rate keep
+    // their stored rate (spec §17); report them so an admin can recalculate explicitly.
+    const tripsOnPreviousRate = closedPrevious
+      ? await tx.trip.count({
+          where: { rateId: closedPrevious.id, status: 'ACTIVE', tripDate: { gte: from } },
+        })
+      : 0;
+    return { rate, closedPrevious, tripsOnPreviousRate };
   }, LOCKING_TX);
 }
 
 /**
  * Cancel a rate entered in error. The row is kept (status CANCELLED) for history.
- * A rate already used by trips cannot be cancelled (enforced once trips exist).
+ * Trips already priced with it keep their stored rate and earnings (spec §17);
+ * `tripsUsingRate` tells the admin how many may need an explicit recalculation.
  */
 export async function cancelRate(id, { reason }, actor, req) {
   return prisma.$transaction(async (tx) => {
@@ -139,7 +147,6 @@ export async function cancelRate(id, { reason }, actor, req) {
     if (before.status === 'CANCELLED') {
       throw AppError.badRequest('This rate is already cancelled', 'RATE_ALREADY_CANCELLED');
     }
-    await assertRateUnused(tx, id);
     const after = await tx.vehicleTypeRate.update({
       where: { id },
       data: {
@@ -159,9 +166,7 @@ export async function cancelRate(id, { reason }, actor, req) {
       reason,
       req,
     });
-    return after;
+    const tripsUsingRate = await tx.trip.count({ where: { rateId: id, status: 'ACTIVE' } });
+    return { rate: after, tripsUsingRate };
   });
 }
-
-/** Hook for Phase 5: rates referenced by trips must stay intact. */
-async function assertRateUnused(_tx, _rateId) {}

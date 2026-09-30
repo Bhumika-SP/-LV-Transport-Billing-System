@@ -110,7 +110,7 @@ Full guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 | 2     | Authentication & RBAC                                                 | ✅ Complete |
 | 3     | Master data (companies, drivers, vehicles, types, rates, assignments) | ✅ Complete |
 | 4     | Company settlement                                                    | ✅ Complete |
-| 5     | Trips                                                                 |             |
+| 5     | Trips                                                                 | ✅ Complete |
 | 6     | Bulk import                                                           |             |
 | 7     | Driver earnings                                                       |             |
 | 8     | Expenses & advances                                                   |             |

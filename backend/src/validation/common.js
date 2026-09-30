@@ -73,3 +73,6 @@ export const optionsQuery = z.object({
 export const paymentMethod = z.enum(PAYMENT_METHODS, {
   error: 'Payment method must be Cash, Bank Transfer, UPI or Cheque',
 });
+
+/** Mandatory reason for corrections, cancellations and other audited overrides. */
+export const reasonText = z.string().trim().min(3, 'A reason is required').max(500);

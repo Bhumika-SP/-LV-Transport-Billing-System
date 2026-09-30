@@ -41,7 +41,12 @@ export default function RateFormModal({ open, onClose, vehicleType }) {
 
   const mutation = useMutation({
     mutationFn: (values) => post('/rates', { ...values, vehicleTypeId: vehicleType.id }),
-    onSuccess: ({ rate, closedPrevious }) => {
+    onSuccess: ({ rate, closedPrevious, tripsOnPreviousRate }) => {
+      if (tripsOnPreviousRate > 0) {
+        toast.warning(
+          `${tripsOnPreviousRate} existing trip(s) dated on/after the new rate keep the previous rate until recalculated.`,
+        );
+      }
       toast.success(
         `Rate ${formatINR(rate.ratePerKm)}/km added from ${formatDate(rate.effectiveFrom)}` +
           (closedPrevious

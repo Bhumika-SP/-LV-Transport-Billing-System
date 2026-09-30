@@ -15,6 +15,7 @@ import {
 } from '../src/modules/company-settlements/company-settlements.service.js';
 import { createDriver } from '../src/modules/drivers/drivers.service.js';
 import { createRate } from '../src/modules/rates/rates.service.js';
+import { createTrip } from '../src/modules/trips/trips.service.js';
 import { createVehicleType } from '../src/modules/vehicle-types/vehicle-types.service.js';
 import { createVehicle } from '../src/modules/vehicles/vehicles.service.js';
 
@@ -183,8 +184,59 @@ async function seedCompanySettlements(actor) {
   console.log(`  ${COMPANY_SETTLEMENTS.length} company settlements`);
 }
 
+/**
+ * Trips for Aug–Sep 2026: each vehicle's current driver does a trip on most weekdays.
+ * Deterministic KM values (no randomness) so seeded totals are reproducible.
+ */
+async function seedTrips(actor) {
+  if ((await prisma.trip.count()) > 0) {
+    console.log('  trips already present — skipped');
+    return;
+  }
+  const vehicles = await prisma.vehicle.findMany({
+    orderBy: { id: 'asc' },
+    include: {
+      companyAssignments: { include: { company: true } },
+      driverAssignments: true,
+    },
+  });
+  let count = 0;
+  for (const [v, vehicle] of vehicles.entries()) {
+    const company = vehicle.companyAssignments[0]?.company;
+    const driverId = vehicle.driverAssignments[0]?.driverId;
+    if (!company || !driverId) continue;
+    for (const month of ['2026-08', '2026-09']) {
+      for (let day = 3 + v; day <= 27; day += 5) {
+        const tripDate = `${month}-${String(day).padStart(2, '0')}`;
+        const startKm = 10000 + v * 5000 + count * 180;
+        const useStartEnd = day % 2 === 1;
+        const km = 60 + ((day * 7 + v * 11) % 90);
+        await createTrip(
+          {
+            companyId: company.id,
+            driverId,
+            vehicleId: vehicle.id,
+            tripDate,
+            externalTripId: `${company.code}-DEV-${month.replace('-', '')}-${v + 1}${String(day).padStart(2, '0')}`,
+            pickup: 'Office Campus (DEV)',
+            dropLocation: 'Employee Drop Zone (DEV)',
+            kmSource: useStartEnd ? 'START_END' : 'DIRECT',
+            ...(useStartEnd
+              ? { startKm: String(startKm), endKm: String(startKm + km) }
+              : { totalKm: String(km) }),
+          },
+          actor,
+        );
+        count += 1;
+      }
+    }
+  }
+  console.log(`  ${count} trips`);
+}
+
 export async function seedDevelopmentData(actor) {
   console.log('Seeding development data…');
   await seedMasterData(actor);
   await seedCompanySettlements(actor);
+  await seedTrips(actor);
 }

@@ -130,7 +130,11 @@ describe('vehicle type rate history (spec §14, scenario §78)', () => {
 
     const res = await as.admin.post(`/api/rates/${id}/cancel`).send({ reason: 'Entered in error' });
     expect(res.status).toBe(200);
-    expect(res.body.data).toMatchObject({ status: 'CANCELLED', cancelReason: 'Entered in error' });
+    expect(res.body.data.rate).toMatchObject({
+      status: 'CANCELLED',
+      cancelReason: 'Entered in error',
+    });
+    expect(res.body.data.tripsUsingRate).toBe(0);
     expect(await resolveRate(sedan.id, '2026-02-01')).toBeNull();
     expect(await prisma.vehicleTypeRate.count()).toBe(1);
 

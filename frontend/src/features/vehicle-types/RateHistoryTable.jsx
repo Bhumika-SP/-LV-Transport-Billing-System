@@ -25,8 +25,13 @@ export default function RateHistoryTable({ vehicleTypeId, currentRateId }) {
 
   const cancel = useMutation({
     mutationFn: ({ id, reason }) => post(`/rates/${id}/cancel`, { reason }),
-    onSuccess: () => {
+    onSuccess: ({ tripsUsingRate }) => {
       toast.success('Rate cancelled');
+      if (tripsUsingRate > 0) {
+        toast.warning(
+          `${tripsUsingRate} trip(s) were priced with this rate and keep it until an admin recalculates them.`,
+        );
+      }
       queryClient.invalidateQueries({ queryKey: ['rates'] });
       queryClient.invalidateQueries({ queryKey: ['vehicle-types'] });
       setCancelling(null);

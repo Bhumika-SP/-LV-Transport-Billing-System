@@ -25,6 +25,7 @@ MySQL 8 (`utf8mb4` / `utf8mb4_unicode_ci`) managed through Prisma 6 migrations.
 | `20260930174137_auth_rbac_audit`     | 2     | `roles`, `permissions`, `role_permissions`, `users`, `audit_logs`                                                      |
 | `20260930175805_master_data`         | 3     | `companies`, `drivers`, `vehicle_types`, `vehicle_type_rates`, `vehicles`, `vehicle_assignments`, `driver_assignments` |
 | `20260930182820_company_settlements` | 4     | `company_settlements` (+ `PaymentMethod` enum)                                                                         |
+| `20260930184249_trips`               | 5     | `trips` (+ `KmSource`, `TripSource`, `TripStatus` enums). UNIQUE(`company_id`, `external_trip_id`)                     |
 
 ## Entity relationship design
 
