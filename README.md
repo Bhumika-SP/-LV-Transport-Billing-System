@@ -85,9 +85,11 @@ All three use the password from `SEED_USER_PASSWORD`. They are never created in 
 
 ## Deployment (summary)
 
-- **API (Render):** build `npm ci && npx prisma migrate deploy`, start `npm start -w backend`, health check path `/health`.
-- **Web (Vercel):** root `frontend`, build `npm run build`, output `dist`. Set the Render URL in `frontend/vercel.json` rewrites.
-- **DB:** managed MySQL 8 with automated backups.
+- **API (Render):** apply `render.yaml` as a Blueprint. Each deploy runs `prisma migrate deploy` and the RBAC sync; the health check is `/health`.
+- **Web (Vercel):** root `frontend`, build `npm run build`, output `dist`. Set the Render hostname in the `frontend/vercel.json` rewrites and keep `VITE_API_BASE_URL=/api`.
+- **DB:** managed MySQL 8 with TLS, automated backups and PITR, and `log_bin_trust_function_creators=1` (the audit triggers need it).
+- **Documents:** private S3-compatible bucket with versioning.
+- **CI:** `.github/workflows/ci.yml` runs lint, formatting, backend and frontend tests against MySQL 8, the build and migration status.
 
 Full guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
@@ -126,4 +128,4 @@ Full guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 | 16    | Audit                                                                 | ✅ Complete |
 | 17    | Testing                                                               | ✅ Complete |
 | 18    | Production hardening                                                  | ✅ Complete |
-| 19    | Deployment                                                            |             |
+| 19    | Deployment                                                            | ✅ Complete |

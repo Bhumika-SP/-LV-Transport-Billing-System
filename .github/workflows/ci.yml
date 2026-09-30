@@ -1,0 +1,69 @@
+# The same gate every phase passed locally: lint, formatting, tests against a real
+# MySQL 8, frontend build and migration status.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ci-root-password
+          MYSQL_DATABASE: lv_billing_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -pci-root-password"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    env:
+      # Test database only: the harness refuses any name that does not end in _test.
+      DATABASE_URL: mysql://root:ci-root-password@127.0.0.1:3306/lv_billing_test
+      TZ: UTC
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Formatting
+        run: npx prettier --check .
+
+      - name: Tests (backend + frontend)
+        run: npm test
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Migration status
+        working-directory: backend
+        run: npx prisma migrate status
+
+      - name: Production dependency audit (report only)
+        run: npm audit --omit=dev || true

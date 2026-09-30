@@ -30,7 +30,7 @@ Every phase is committed only when all of these pass:
 | Build      | `npm run build`                           |
 | Migrations | `cd backend && npx prisma migrate status` |
 
-The CI workflow added in Phase 19 runs the same gate on every push.
+CI (`.github/workflows/ci.yml`) runs the same gate on every push and pull request.
 
 ## Layout
 

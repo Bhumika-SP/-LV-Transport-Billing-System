@@ -131,7 +131,8 @@ The browser then talks to a single origin, so the auth cookie is first-party
 would break a cross-site setup where the frontend is on `*.vercel.app` and the API on
 `*.onrender.com`.
 
-- Backups: use the managed MySQL provider's automated daily backups plus point-in-time recovery.
+- Deployment is defined in `render.yaml`, `frontend/vercel.json` and `.github/workflows/ci.yml`; see [DEPLOYMENT.md](DEPLOYMENT.md).
+- Backups: managed MySQL daily backups plus point-in-time recovery, weekly logical dumps and bucket versioning (see [SECURITY.md](SECURITY.md)).
 - Logs: Pino JSON to stdout, collected by Render's log stream.
 - Documents: private S3-compatible bucket (e.g. Cloudflare R2 / AWS S3), served
   through an authorized backend download endpoint. A local-disk driver is used in development.

@@ -1,0 +1,46 @@
+# Render Blueprint for the LV Transport Billing API (spec Phase 19).
+# Secrets are declared with `sync: false`: Render asks for them when the blueprint is
+# first applied, and they are never stored in git.
+services:
+  - type: web
+    name: lv-billing-api
+    runtime: node
+    region: singapore
+    plan: starter
+    branch: main
+    rootDir: .
+    buildCommand: npm ci --workspace backend --include-workspace-root && npm run db:deploy -w backend && npm run db:seed -w backend
+    startCommand: npm start -w backend
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: '22'
+      - key: LOG_LEVEL
+        value: info
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        sync: false
+      - key: SESSION_HOURS
+        value: '8'
+      - key: COOKIE_SAMESITE
+        value: lax
+      - key: STORAGE_DRIVER
+        value: s3
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_REGION
+        value: auto
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: NOTIFICATION_CHECK_HOURS
+        value: '6'
