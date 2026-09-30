@@ -8,6 +8,7 @@ import CompaniesPage from './features/companies/CompaniesPage';
 import CompanyDetailPage from './features/companies/CompanyDetailPage';
 import CompanySettlementsPage from './features/company-settlements/CompanySettlementsPage';
 import DriverDetailPage from './features/drivers/DriverDetailPage';
+import EarningsPage from './features/driver-finance/EarningsPage';
 import DriversPage from './features/drivers/DriversPage';
 import ImportBatchPage from './features/imports/ImportBatchPage';
 import ImportsPage from './features/imports/ImportsPage';
@@ -38,6 +39,7 @@ const PAGES = {
   '/company-settlements': CompanySettlementsPage,
   '/trips': TripsPage,
   '/imports': ImportsPage,
+  '/earnings': EarningsPage,
 };
 
 /** Routes that are not nav entries (detail pages). */

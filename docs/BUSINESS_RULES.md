@@ -71,6 +71,17 @@ TRIP EARNINGS = TOTAL KM × VEHICLE-TYPE RATE EFFECTIVE ON THE TRIP DATE   (roun
 - Only RECEIVED amounts feed LV profit. The single source is `receivedAmountsByCompanyMonth()` / `summarizeCompanySettlements().receivedTotal`.
 - Biller/Admin record and mark received. After receipt, changes need Admin plus a reason: correct, revert to PENDING, or delete (PENDING only). Previous values are kept in the audit log.
 
+## R4b. Driver earnings (Phase 7)
+
+```
+GROSS DRIVER EARNINGS = TRIP EARNINGS + ALLOWANCES + OTHER EARNINGS + POSITIVE ADJUSTMENTS
+```
+
+- Allowances, other earnings and positive adjustments are **separate line items**, never merged into one amount. Each has a driver, date, settlement month, amount > 0 and a description or reason (a reason is mandatory for adjustments).
+- The settlement month defaults to the month of the item date and can be set explicitly.
+- Items are **voided with a reason**, never deleted. Voided items and cancelled trips never count.
+- The formula lives only in `settlements/settlement-formula.js` (`calculateGrossEarnings`, `calculateDriverSettlement`).
+
 ## R5. Final driver settlement (Phase 9), the locked formula
 
 ```

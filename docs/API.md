@@ -196,6 +196,22 @@ is verified from the file bytes, not the name alone.
 | POST         | `/trip-imports/:id/confirm`                     | `{ includeWarnings: true }`. Re-validates, then imports all importable rows in **one transaction** (company-locked). Unexpected failure → nothing saved, batch `FAILED`, 500 `IMPORT_FAILED`          |
 | POST         | `/trip-imports/:id/discard`                     | VALIDATED → DISCARDED                                                                                                                                                                                 |
 
+### Driver line items — `/api/earnings`, `/api/adjustments` (Phase 7)
+
+View: `driver_finance.view` (all roles). Write: `earning.manage` / `adjustment.manage` (Admin, Biller).
+Every line-item resource (later also `/api/driver-expenses`) has the same shape:
+
+| Method | Path                   | Notes                                                                                                                                          |
+| ------ | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/<resource>`          | Filters `driverId`, `month` (settlement month), `type`, `status` (ACTIVE/VOID), `fromDate`/`toDate`. Sort `date` (desc), `amount`, `createdAt` |
+| GET    | `/<resource>/totals`   | Same filters → `[{ type, count, amount }]` over ACTIVE items                                                                                   |
+| POST   | `/<resource>`          | Create. `amount` > 0. `settlementMonth` defaults to the month of the item date                                                                 |
+| POST   | `/<resource>/:id/void` | `{ reason }`. Kept for history, excluded from totals. Never deleted                                                                            |
+
+- `POST /earnings`: `{ driverId, type: ALLOWANCE|OTHER_EARNING, amount, earningDate, settlementMonth?, description }`
+- `POST /adjustments`: `{ driverId, type: POSITIVE_ADJUSTMENT|OTHER_DEDUCTION, amount, adjustmentDate, settlementMonth?, reason }` (reason mandatory)
+- `GET /earnings/gross?month=|fromMonth=&toMonth=|driverId=` → per driver × month: `tripCount, tripEarnings, allowances, otherEarnings, positiveAdjustments, grossEarnings`
+
 ### Planned modules (spec §61)
 
 `/api/auth`, `/api/users`, `/api/companies`, `/api/drivers`, `/api/vehicles`,

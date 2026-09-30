@@ -55,6 +55,10 @@ export const PERMISSIONS = Object.freeze({
   // Bulk import (Phase 6)
   TRIP_IMPORT: 'trip.import',
   IMPORT_VIEW: 'import.view',
+  // Driver finance (Phases 7–8)
+  DRIVER_FINANCE_VIEW: 'driver_finance.view',
+  EARNING_MANAGE: 'earning.manage',
+  ADJUSTMENT_MANAGE: 'adjustment.manage',
 });
 
 const { ADMIN, BILLER, AUDITOR } = ROLES;
@@ -129,4 +133,23 @@ export const PERMISSION_DEFINITIONS = [
     [ADMIN, BILLER],
   ],
   [P.IMPORT_VIEW, 'Trips', 'View import history and validation results', [ADMIN, BILLER, AUDITOR]],
+
+  [
+    P.DRIVER_FINANCE_VIEW,
+    'Driver finance',
+    'View driver earnings, adjustments, expenses and advances',
+    [ADMIN, BILLER, AUDITOR],
+  ],
+  [
+    P.EARNING_MANAGE,
+    'Driver finance',
+    'Record/void allowances and other earnings',
+    [ADMIN, BILLER],
+  ],
+  [
+    P.ADJUSTMENT_MANAGE,
+    'Driver finance',
+    'Record/void positive adjustments and other deductions (reason required)',
+    [ADMIN, BILLER],
+  ],
 ].map(([code, module, description, roles]) => ({ code, module, description, roles }));

@@ -112,7 +112,7 @@ Full guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 | 4     | Company settlement                                                    | ✅ Complete |
 | 5     | Trips                                                                 | ✅ Complete |
 | 6     | Bulk import                                                           | ✅ Complete |
-| 7     | Driver earnings                                                       |             |
+| 7     | Driver earnings                                                       | ✅ Complete |
 | 8     | Expenses & advances                                                   |             |
 | 9     | Driver settlement engine                                              |             |
 | 10    | Driver payments                                                       |             |

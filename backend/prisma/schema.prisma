@@ -112,6 +112,10 @@ model User {
   importTemplatesCreated     ImportTemplate[]    @relation("ImportTemplateCreatedBy")
   importsUploaded            TripImport[]        @relation("ImportUploadedBy")
   importsImported            TripImport[]        @relation("ImportImportedBy")
+  earningsCreated            DriverEarning[]     @relation("EarningCreatedBy")
+  earningsVoided             DriverEarning[]     @relation("EarningVoidedBy")
+  adjustmentsCreated         DriverAdjustment[]  @relation("AdjustmentCreatedBy")
+  adjustmentsVoided          DriverAdjustment[]  @relation("AdjustmentVoidedBy")
 
   @@index([roleId])
   @@index([status])
@@ -217,6 +221,8 @@ model Driver {
   createdBy   User?              @relation("DriverCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   assignments DriverAssignment[]
   trips       Trip[]
+  earnings    DriverEarning[]
+  adjustments DriverAdjustment[]
 
   @@index([status])
   @@index([fullName])
@@ -596,4 +602,79 @@ model ImportRow {
   @@unique([importId, rowNumber])
   @@index([importId, status])
   @@map("import_rows")
+}
+
+// ============================================================
+// Phase 7 — Driver earnings (allowances, other earnings, adjustments)
+// ============================================================
+
+enum EarningType {
+  ALLOWANCE
+  OTHER_EARNING
+}
+
+/// POSITIVE_ADJUSTMENT adds to the settlement; OTHER_DEDUCTION (Phase 8) subtracts.
+enum AdjustmentType {
+  POSITIVE_ADJUSTMENT
+  OTHER_DEDUCTION
+}
+
+enum ItemStatus {
+  ACTIVE
+  VOID
+}
+
+/// Allowances and other earnings — each a separate line item (spec §21).
+model DriverEarning {
+  id              Int         @id @default(autoincrement())
+  driverId        Int         @map("driver_id")
+  type            EarningType
+  amount          Decimal     @db.Decimal(15, 2)
+  earningDate     DateTime    @map("earning_date") @db.Date
+  /// "YYYY-MM": the monthly settlement this item belongs to.
+  settlementMonth String      @map("settlement_month") @db.Char(7)
+  description     String      @db.VarChar(500)
+  status          ItemStatus  @default(ACTIVE)
+  voidReason      String?     @map("void_reason") @db.VarChar(500)
+  voidedAt        DateTime?   @map("voided_at")
+  voidedById      Int?        @map("voided_by_id")
+  createdById     Int?        @map("created_by_id")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+
+  driver    Driver @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  createdBy User?  @relation("EarningCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  voidedBy  User?  @relation("EarningVoidedBy", fields: [voidedById], references: [id], onDelete: SetNull)
+
+  @@index([driverId, settlementMonth])
+  @@index([settlementMonth, status])
+  @@index([earningDate])
+  @@map("driver_earnings")
+}
+
+/// Positive adjustments and other deductions; a reason is mandatory (spec §26).
+model DriverAdjustment {
+  id              Int            @id @default(autoincrement())
+  driverId        Int            @map("driver_id")
+  type            AdjustmentType
+  amount          Decimal        @db.Decimal(15, 2)
+  adjustmentDate  DateTime       @map("adjustment_date") @db.Date
+  settlementMonth String         @map("settlement_month") @db.Char(7)
+  reason          String         @db.VarChar(500)
+  status          ItemStatus     @default(ACTIVE)
+  voidReason      String?        @map("void_reason") @db.VarChar(500)
+  voidedAt        DateTime?      @map("voided_at")
+  voidedById      Int?           @map("voided_by_id")
+  createdById     Int?           @map("created_by_id")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  driver    Driver @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  createdBy User?  @relation("AdjustmentCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  voidedBy  User?  @relation("AdjustmentVoidedBy", fields: [voidedById], references: [id], onDelete: SetNull)
+
+  @@index([driverId, settlementMonth])
+  @@index([settlementMonth, status])
+  @@index([adjustmentDate])
+  @@map("driver_adjustments")
 }

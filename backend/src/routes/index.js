@@ -5,6 +5,7 @@ import authRoutes from '../modules/auth/auth.routes.js';
 import companiesRoutes from '../modules/companies/companies.routes.js';
 import companySettlementsRoutes from '../modules/company-settlements/company-settlements.routes.js';
 import driversRoutes from '../modules/drivers/drivers.routes.js';
+import { adjustmentsRouter, earningsRouter } from '../modules/earnings/earnings.routes.js';
 import { importsRouter, templatesRouter } from '../modules/imports/imports.routes.js';
 import ratesRoutes from '../modules/rates/rates.routes.js';
 import rolesRoutes from '../modules/roles/roles.routes.js';
@@ -41,5 +42,8 @@ api.use('/company-settlements', companySettlementsRoutes);
 api.use('/trips', tripsRoutes);
 api.use('/import-templates', templatesRouter);
 api.use('/trip-imports', importsRouter);
+
+api.use('/earnings', earningsRouter);
+api.use('/adjustments', adjustmentsRouter);
 
 export default api;

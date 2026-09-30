@@ -13,6 +13,9 @@ import DataTable from '../../components/ui/DataTable';
 import { ErrorState, LoadingState } from '../../components/ui/States';
 import Tabs from '../../components/ui/Tabs';
 import { PERMISSIONS } from '../../config/permissions';
+import DriverItemsTable from '../driver-finance/DriverItemsTable';
+import GrossEarningsTable from '../driver-finance/GrossEarningsTable';
+import { EARNINGS, POSITIVE_ADJUSTMENTS } from '../driver-finance/itemConfigs';
 import TripTable from '../trips/TripTable';
 import { get } from '../../lib/api';
 import { formatDate, formatDateTime } from '../../lib/format';
@@ -168,7 +171,16 @@ export default function DriverDetailPage() {
           {
             key: 'earnings',
             label: 'Earnings',
-            content: <PhasePlaceholder what="Earnings" phase={7} />,
+            content: (
+              <div className="space-y-4">
+                <GrossEarningsTable driverId={id} />
+                <DriverItemsTable config={EARNINGS} fixed={{ driverId: id }} />
+                <DriverItemsTable
+                  config={POSITIVE_ADJUSTMENTS}
+                  fixed={{ driverId: id, type: 'POSITIVE_ADJUSTMENT' }}
+                />
+              </div>
+            ),
           },
           {
             key: 'expenses',

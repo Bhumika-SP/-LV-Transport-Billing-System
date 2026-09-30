@@ -14,6 +14,7 @@ import {
   markReceived,
 } from '../src/modules/company-settlements/company-settlements.service.js';
 import { createDriver } from '../src/modules/drivers/drivers.service.js';
+import { adjustmentsService, earningsService } from '../src/modules/earnings/earnings.service.js';
 import { createRate } from '../src/modules/rates/rates.service.js';
 import { createTrip } from '../src/modules/trips/trips.service.js';
 import { createVehicleType } from '../src/modules/vehicle-types/vehicle-types.service.js';
@@ -234,9 +235,59 @@ async function seedTrips(actor) {
   console.log(`  ${count} trips`);
 }
 
+/** Allowances, other earnings and positive adjustments for Aug–Sep 2026. */
+async function seedEarnings(actor) {
+  if ((await prisma.driverEarning.count()) > 0) {
+    console.log('  earnings already present — skipped');
+    return;
+  }
+  const drivers = await prisma.driver.findMany({ orderBy: { id: 'asc' } });
+  let count = 0;
+  for (const month of ['2026-08', '2026-09']) {
+    for (const [i, d] of drivers.entries()) {
+      await earningsService.create(
+        {
+          driverId: d.id,
+          type: 'ALLOWANCE',
+          amount: '1000.00',
+          earningDate: `${month}-25`,
+          description: 'Night shift allowance (DEV)',
+        },
+        actor,
+      );
+      count += 1;
+      if (i < 3) {
+        await earningsService.create(
+          {
+            driverId: d.id,
+            type: 'OTHER_EARNING',
+            amount: '500.00',
+            earningDate: `${month}-26`,
+            description: 'Festival incentive (DEV)',
+          },
+          actor,
+        );
+        count += 1;
+      }
+    }
+  }
+  await adjustmentsService.create(
+    {
+      driverId: drivers[0].id,
+      type: 'POSITIVE_ADJUSTMENT',
+      amount: '250.00',
+      adjustmentDate: '2026-09-27',
+      reason: 'Zero-complaint bonus (DEV)',
+    },
+    actor,
+  );
+  console.log(`  ${count} earnings, 1 positive adjustment`);
+}
+
 export async function seedDevelopmentData(actor) {
   console.log('Seeding development data…');
   await seedMasterData(actor);
   await seedCompanySettlements(actor);
   await seedTrips(actor);
+  await seedEarnings(actor);
 }
