@@ -1,13 +1,13 @@
 import request from 'supertest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../src/lib/prisma.js', () => ({
+vi.mock('../../src/lib/prisma.js', () => ({
   prisma: {},
   checkDatabase: vi.fn(),
 }));
 
-const { checkDatabase } = await import('../src/lib/prisma.js');
-const { createApp } = await import('../src/app.js');
+const { checkDatabase } = await import('../../src/lib/prisma.js');
+const { createApp } = await import('../../src/app.js');
 
 describe('foundation', () => {
   let app;

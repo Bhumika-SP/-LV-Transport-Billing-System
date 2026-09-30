@@ -46,6 +46,30 @@ routes → controllers → services (business rules) → Prisma → MySQL
 - Settlement months are stored as `CHAR(7)` `YYYY-MM`. A trip's month is derived from its
   `DATE` by string, so the result is deterministic.
 - "Today" on the server is computed in Asia/Kolkata, not in server local time.
+- **Field naming convention.** The serializer relies on it (`src/utils/serialize.js`):
+  - `*At` fields are timestamps and are sent as full ISO strings.
+  - `*Date`, `effectiveFrom` and `effectiveTo` fields are business dates and are sent as `YYYY-MM-DD`.
+  - New date columns must follow this naming.
+
+### Shared building blocks (Phase 1)
+
+| Concern            | Location                                                                                                                 |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| Request validation | `middleware/validate.js`. Parsed values are on `req.valid.{params,query,body}`                                           |
+| Common Zod types   | `validation/common.js`: ids, dates, months, amounts, list query                                                          |
+| Money arithmetic   | `utils/money.js`: decimal.js, rounded half-up to paise                                                                   |
+| Date helpers       | `utils/dates.js`: parse, add days, month bounds, today in IST                                                            |
+| Response envelope  | `utils/response.js`: `ok`, `created`, `paged`, all serialized                                                            |
+| Frontend UI kit    | `frontend/src/components/ui/*`: Button, Field, Modal, ConfirmDialog, DataTable, Pagination, Tabs, Badge, States, Toolbar |
+| List state in URL  | `frontend/src/hooks/useListParams.js`                                                                                    |
+
+## Testing
+
+- **Unit tests** (`backend/tests/unit`) mock the database.
+- **Integration tests** (`backend/tests/integration`) run against a real MySQL database
+  set by `backend/.env.test`. The database name **must end in `_test`**; the harness
+  refuses anything else because it truncates tables. Migrations are applied
+  automatically before the suite runs. Test files run one at a time.
 
 ## Security baseline
 

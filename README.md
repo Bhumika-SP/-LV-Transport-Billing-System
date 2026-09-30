@@ -39,6 +39,7 @@ docs/       Architecture, database/ERD, API, business rules, deployment
    ```bash
    cp backend/.env.example backend/.env     # set DATABASE_URL
    cp frontend/.env.example frontend/.env
+   cp backend/.env.test.example backend/.env.test   # tests; DB name must end in _test
    ```
 
 3. **Install and migrate.**
@@ -89,25 +90,25 @@ Full guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ## Build phases
 
-| Phase | Scope                                                                 | Status                                   |
-| ----- | --------------------------------------------------------------------- | ---------------------------------------- |
-| 0     | Project initialization                                                | ✅ Complete                              |
-| 1     | Foundation (skeleton, health, error handling, logging)                | 🟡 Code present, awaiting phase sign-off |
-| 2     | Authentication & RBAC                                                 |                                          |
-| 3     | Master data (companies, drivers, vehicles, types, rates, assignments) |                                          |
-| 4     | Company settlement                                                    |                                          |
-| 5     | Trips                                                                 |                                          |
-| 6     | Bulk import                                                           |                                          |
-| 7     | Driver earnings                                                       |                                          |
-| 8     | Expenses & advances                                                   |                                          |
-| 9     | Driver settlement engine                                              |                                          |
-| 10    | Driver payments                                                       |                                          |
-| 11    | LV profit                                                             |                                          |
-| 12    | Dashboards                                                            |                                          |
-| 13    | Reports                                                               |                                          |
-| 14    | GST / finance                                                         |                                          |
-| 15    | Documents & notifications                                             |                                          |
-| 16    | Audit                                                                 |                                          |
-| 17    | Testing                                                               |                                          |
-| 18    | Production hardening                                                  |                                          |
-| 19    | Deployment                                                            |                                          |
+| Phase | Scope                                                                 | Status      |
+| ----- | --------------------------------------------------------------------- | ----------- |
+| 0     | Project initialization                                                | ✅ Complete |
+| 1     | Foundation (skeleton, health, error handling, logging)                | ✅ Complete |
+| 2     | Authentication & RBAC                                                 |             |
+| 3     | Master data (companies, drivers, vehicles, types, rates, assignments) |             |
+| 4     | Company settlement                                                    |             |
+| 5     | Trips                                                                 |             |
+| 6     | Bulk import                                                           |             |
+| 7     | Driver earnings                                                       |             |
+| 8     | Expenses & advances                                                   |             |
+| 9     | Driver settlement engine                                              |             |
+| 10    | Driver payments                                                       |             |
+| 11    | LV profit                                                             |             |
+| 12    | Dashboards                                                            |             |
+| 13    | Reports                                                               |             |
+| 14    | GST / finance                                                         |             |
+| 15    | Documents & notifications                                             |             |
+| 16    | Audit                                                                 |             |
+| 17    | Testing                                                               |             |
+| 18    | Production hardening                                                  |             |
+| 19    | Deployment                                                            |             |
