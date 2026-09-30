@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { SETTLEMENT_MONTH_REGEX } from '../config/constants.js';
+import { PAYMENT_METHODS, SETTLEMENT_MONTH_REGEX } from '../config/constants.js';
 import { isValidDateString } from '../utils/dates.js';
 
 /** Shared Zod building blocks so every module validates the same way. */
@@ -68,4 +68,8 @@ export const optionsQuery = z.object({
     .enum(['true', 'false'])
     .optional()
     .transform((v) => v === 'true'),
+});
+
+export const paymentMethod = z.enum(PAYMENT_METHODS, {
+  error: 'Payment method must be Cash, Bank Transfer, UPI or Cheque',
 });

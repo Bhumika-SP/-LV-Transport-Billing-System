@@ -96,14 +96,16 @@ model User {
   createdUsers User[]     @relation("UserCreatedBy")
   auditLogs    AuditLog[]
 
-  companiesCreated          Company[]           @relation("CompanyCreatedBy")
-  driversCreated            Driver[]            @relation("DriverCreatedBy")
-  vehicleTypesCreated       VehicleType[]       @relation("VehicleTypeCreatedBy")
-  ratesCreated              VehicleTypeRate[]   @relation("RateCreatedBy")
-  ratesCancelled            VehicleTypeRate[]   @relation("RateCancelledBy")
-  vehiclesCreated           Vehicle[]           @relation("VehicleCreatedBy")
-  vehicleAssignmentsCreated VehicleAssignment[] @relation("VehicleAssignmentCreatedBy")
-  driverAssignmentsCreated  DriverAssignment[]  @relation("DriverAssignmentCreatedBy")
+  companiesCreated           Company[]           @relation("CompanyCreatedBy")
+  driversCreated             Driver[]            @relation("DriverCreatedBy")
+  vehicleTypesCreated        VehicleType[]       @relation("VehicleTypeCreatedBy")
+  ratesCreated               VehicleTypeRate[]   @relation("RateCreatedBy")
+  ratesCancelled             VehicleTypeRate[]   @relation("RateCancelledBy")
+  vehiclesCreated            Vehicle[]           @relation("VehicleCreatedBy")
+  vehicleAssignmentsCreated  VehicleAssignment[] @relation("VehicleAssignmentCreatedBy")
+  driverAssignmentsCreated   DriverAssignment[]  @relation("DriverAssignmentCreatedBy")
+  companySettlementsCreated  CompanySettlement[] @relation("CompanySettlementCreatedBy")
+  companySettlementsReceived CompanySettlement[] @relation("CompanySettlementReceivedBy")
 
   @@index([roleId])
   @@index([status])
@@ -176,6 +178,7 @@ model Company {
 
   createdBy          User?               @relation("CompanyCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   vehicleAssignments VehicleAssignment[]
+  settlements        CompanySettlement[]
 
   @@index([status])
   @@map("companies")
@@ -325,4 +328,51 @@ model DriverAssignment {
   @@index([driverId, startDate])
   @@index([vehicleId, startDate])
   @@map("driver_assignments")
+}
+
+// ============================================================
+// Phase 4 — Monthly company settlement
+// ============================================================
+
+/// Spec §20: only these four methods are allowed in V1.
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  UPI
+  CHEQUE
+}
+
+enum CompanySettlementStatus {
+  PENDING
+  RECEIVED
+}
+
+/// One record per company per month (spec §18). Only RECEIVED amounts count as
+/// actual cash received for LV profit. Expected and received amounts are both kept.
+model CompanySettlement {
+  id              Int                     @id @default(autoincrement())
+  companyId       Int                     @map("company_id")
+  /// "YYYY-MM"
+  settlementMonth String                  @map("settlement_month") @db.Char(7)
+  expectedAmount  Decimal                 @map("expected_amount") @db.Decimal(15, 2)
+  receivedAmount  Decimal?                @map("received_amount") @db.Decimal(15, 2)
+  status          CompanySettlementStatus @default(PENDING)
+  receivedDate    DateTime?               @map("received_date") @db.Date
+  paymentMethod   PaymentMethod?          @map("payment_method")
+  referenceNumber String?                 @map("reference_number") @db.VarChar(100)
+  notes           String?                 @db.Text
+  createdById     Int?                    @map("created_by_id")
+  receivedById    Int?                    @map("received_by_id")
+  receivedAt      DateTime?               @map("received_at")
+  createdAt       DateTime                @default(now()) @map("created_at")
+  updatedAt       DateTime                @updatedAt @map("updated_at")
+
+  company    Company @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  createdBy  User?   @relation("CompanySettlementCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  receivedBy User?   @relation("CompanySettlementReceivedBy", fields: [receivedById], references: [id], onDelete: SetNull)
+
+  @@unique([companyId, settlementMonth])
+  @@index([settlementMonth])
+  @@index([status])
+  @@map("company_settlements")
 }

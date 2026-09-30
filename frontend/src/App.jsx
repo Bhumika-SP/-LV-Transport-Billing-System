@@ -6,6 +6,7 @@ import { PERMISSIONS } from './config/permissions';
 import AssignmentsPage from './features/assignments/AssignmentsPage';
 import CompaniesPage from './features/companies/CompaniesPage';
 import CompanyDetailPage from './features/companies/CompanyDetailPage';
+import CompanySettlementsPage from './features/company-settlements/CompanySettlementsPage';
 import DriverDetailPage from './features/drivers/DriverDetailPage';
 import DriversPage from './features/drivers/DriversPage';
 import RolesPage from './features/roles/RolesPage';
@@ -30,6 +31,7 @@ const PAGES = {
   '/vehicles': VehiclesPage,
   '/vehicle-types': VehicleTypesPage,
   '/assignments': AssignmentsPage,
+  '/company-settlements': CompanySettlementsPage,
 };
 
 /** Routes that are not nav entries (detail pages). */

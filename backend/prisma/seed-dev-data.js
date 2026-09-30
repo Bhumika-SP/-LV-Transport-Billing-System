@@ -9,6 +9,10 @@
 import { prisma } from '../src/lib/prisma.js';
 import { createAssignment } from '../src/modules/assignments/assignments.service.js';
 import { createCompany } from '../src/modules/companies/companies.service.js';
+import {
+  createCompanySettlement,
+  markReceived,
+} from '../src/modules/company-settlements/company-settlements.service.js';
 import { createDriver } from '../src/modules/drivers/drivers.service.js';
 import { createRate } from '../src/modules/rates/rates.service.js';
 import { createVehicleType } from '../src/modules/vehicle-types/vehicle-types.service.js';
@@ -142,7 +146,45 @@ async function seedMasterData(actor) {
   );
 }
 
+/** [company code, month, expected, received (null = still PENDING), received date, method, ref] */
+const COMPANY_SETTLEMENTS = [
+  ['INFY', '2026-08', '2450000.00', '2450000.00', '2026-09-05', 'BANK_TRANSFER', 'DEV-UTR-0801'],
+  ['WIPRO', '2026-08', '1200000.00', '1180000.00', '2026-09-07', 'CHEQUE', 'DEV-CHQ-0802'],
+  ['TECHM', '2026-08', '600000.00', '600000.00', '2026-09-10', 'UPI', 'DEV-UPI-0803'],
+  // Scenario §79 starting point: Infosys September expected 25,00,000, still PENDING.
+  ['INFY', '2026-09', '2500000.00', null],
+  ['WIPRO', '2026-09', '1250000.00', null],
+];
+
+async function seedCompanySettlements(actor) {
+  if ((await prisma.companySettlement.count()) > 0) {
+    console.log('  company settlements already present — skipped');
+    return;
+  }
+  const companies = Object.fromEntries((await prisma.company.findMany()).map((c) => [c.code, c]));
+  for (const [code, month, expected, received, date, method, ref] of COMPANY_SETTLEMENTS) {
+    const s = await createCompanySettlement(
+      { companyId: companies[code].id, settlementMonth: month, expectedAmount: expected },
+      actor,
+    );
+    if (received) {
+      await markReceived(
+        s.id,
+        {
+          receivedAmount: received,
+          receivedDate: date,
+          paymentMethod: method,
+          referenceNumber: ref,
+        },
+        actor,
+      );
+    }
+  }
+  console.log(`  ${COMPANY_SETTLEMENTS.length} company settlements`);
+}
+
 export async function seedDevelopmentData(actor) {
   console.log('Seeding development data…');
   await seedMasterData(actor);
+  await seedCompanySettlements(actor);
 }

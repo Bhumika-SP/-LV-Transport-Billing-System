@@ -47,8 +47,11 @@ TRIP EARNINGS = TOTAL KM × VEHICLE-TYPE RATE EFFECTIVE ON THE TRIP DATE
 
 ## R4. Company settlement (Phase 4)
 
-- One record per company per month (database UNIQUE).
-- `PENDING` means expected but not received, and it never counts as received. `RECEIVED` records the actual amount and date. Expected and received amounts are both kept.
+- One record per company per month, enforced by a database UNIQUE on (`company_id`, `settlement_month`).
+- Created as **PENDING** with the **expected** amount. PENDING never counts as money received.
+- **RECEIVED** records the **actual** amount, received date (not in the future), payment method (Cash / Bank Transfer / UPI / Cheque) and an optional reference. Expected and received are both kept, and the difference is shown.
+- Only RECEIVED amounts feed LV profit. The single source is `receivedAmountsByCompanyMonth()` / `summarizeCompanySettlements().receivedTotal`.
+- Biller/Admin record and mark received. After receipt, changes need Admin plus a reason: correct, revert to PENDING, or delete (PENDING only). Previous values are kept in the audit log.
 
 ## R5. Final driver settlement (Phase 9), the locked formula
 

@@ -3,6 +3,7 @@ import { requireCsrfHeader } from '../middleware/csrf.js';
 import assignmentsRoutes from '../modules/assignments/assignments.routes.js';
 import authRoutes from '../modules/auth/auth.routes.js';
 import companiesRoutes from '../modules/companies/companies.routes.js';
+import companySettlementsRoutes from '../modules/company-settlements/company-settlements.routes.js';
 import driversRoutes from '../modules/drivers/drivers.routes.js';
 import ratesRoutes from '../modules/rates/rates.routes.js';
 import rolesRoutes from '../modules/roles/roles.routes.js';
@@ -33,5 +34,7 @@ api.use('/vehicle-types', vehicleTypesRoutes);
 api.use('/rates', ratesRoutes);
 api.use('/vehicles', vehiclesRoutes);
 api.use('/assignments', assignmentsRoutes);
+
+api.use('/company-settlements', companySettlementsRoutes);
 
 export default api;

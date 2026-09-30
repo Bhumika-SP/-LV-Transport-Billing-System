@@ -43,3 +43,14 @@ export const STATUS_OPTIONS = [
   { value: 'ACTIVE', label: 'Active' },
   { value: 'INACTIVE', label: 'Inactive' },
 ];
+
+/** Spec §20: the only payment methods allowed in V1. */
+export const PAYMENT_METHOD_OPTIONS = [
+  { value: 'CASH', label: 'Cash' },
+  { value: 'BANK_TRANSFER', label: 'Bank Transfer' },
+  { value: 'UPI', label: 'UPI' },
+  { value: 'CHEQUE', label: 'Cheque' },
+];
+
+export const paymentMethodLabel = (value) =>
+  PAYMENT_METHOD_OPTIONS.find((o) => o.value === value)?.label ?? '—';

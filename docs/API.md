@@ -138,6 +138,23 @@ and records are never deleted.
 | POST   | `/assignments/vehicles`, `/assignments/drivers` | [`assignment.manage`] parties plus `startDate`*, `endDate`, `notes`. Parties must be ACTIVE. Overlaps → 409 `ASSIGNMENT_OVERLAP` unless allowed by settings |
 | PATCH  | `/assignments/{vehicles,drivers}/:id`           | Change dates/notes, or end the assignment by setting `endDate`. Parties are immutable                                                                       |
 
+### Company settlements — `/api/company-settlements` (Phase 4)
+
+View: `company_settlement.view` (all roles). Record: `company_settlement.manage` (Admin, Biller).
+Correct: `company_settlement.correct` (Admin). Every change is audited. Payment method is one of
+`CASH | BANK_TRANSFER | UPI | CHEQUE`.
+
+| Method | Path                               | Notes                                                                                                                                                                                                                                      |
+| ------ | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| GET    | `/company-settlements`             | Filters `companyId`, `status` (PENDING/RECEIVED), `month`, or `fromMonth`/`toMonth`. Sort `settlementMonth` (desc), `expectedAmount`, `receivedAmount`, `receivedDate`. Each row has `variance` = received − expected (null while pending) |
+| GET    | `/company-settlements/summary`     | Same filters → `expectedTotal` (all), **`receivedTotal` (RECEIVED only, actual amounts)**, `pendingTotal` (PENDING expected), plus counts                                                                                                  |
+| POST   | `/company-settlements`             | [manage] `{ companyId, settlementMonth: "YYYY-MM", expectedAmount, notes? }` → PENDING. 409 if the company already has that month                                                                                                          |
+| PATCH  | `/company-settlements/:id`         | [manage] PENDING only: `{ expectedAmount?, notes? }`                                                                                                                                                                                       |
+| POST   | `/company-settlements/:id/receive` | [manage] PENDING → RECEIVED: `{ receivedAmount, receivedDate (not future), paymentMethod, referenceNumber?, notes? }`                                                                                                                      |
+| POST   | `/company-settlements/:id/correct` | [correct] RECEIVED only: any of expected/received amount, date, method, reference, notes, plus **`reason`**                                                                                                                                |
+| POST   | `/company-settlements/:id/revert`  | [correct] RECEIVED → PENDING, clears receipt fields. `{ reason }`                                                                                                                                                                          |
+| DELETE | `/company-settlements/:id`         | [correct] PENDING only. `{ reason }`. RECEIVED settlements cannot be deleted                                                                                                                                                               |
+
 ### Planned modules (spec §61)
 
 `/api/auth`, `/api/users`, `/api/companies`, `/api/drivers`, `/api/vehicles`,

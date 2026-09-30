@@ -15,6 +15,7 @@ import Tabs from '../../components/ui/Tabs';
 import { PERMISSIONS } from '../../config/permissions';
 import { get } from '../../lib/api';
 import { formatDate, formatDateTime } from '../../lib/format';
+import CompanySettlementTable from '../company-settlements/CompanySettlementTable';
 import CompanyFormModal from './CompanyFormModal';
 
 const period = (r) =>
@@ -168,7 +169,7 @@ export default function CompanyDetailPage() {
           {
             key: 'settlements',
             label: 'Settlement History',
-            content: <PhasePlaceholder what="Monthly company settlements" phase={4} />,
+            content: <CompanySettlementTable companyId={id} />,
           },
           { key: 'trips', label: 'Trips', content: <PhasePlaceholder what="Trips" phase={5} /> },
           { key: 'drivers', label: 'Drivers', content: <CompanyDrivers companyId={id} /> },
