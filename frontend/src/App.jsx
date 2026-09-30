@@ -14,6 +14,7 @@ import { DriverExpensesPage, LvExpensesPage } from './features/driver-finance/Ex
 import DriversPage from './features/drivers/DriversPage';
 import GstPage, { TaxReportsPage } from './features/gst/GstPage';
 import ImportBatchPage from './features/imports/ImportBatchPage';
+import NotificationsPage from './features/notifications/NotificationsPage';
 import ImportsPage from './features/imports/ImportsPage';
 import PaymentsPage from './features/payments/PaymentsPage';
 import {
@@ -130,6 +131,7 @@ export default function App() {
               }
             />
           ))}
+          <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Route>

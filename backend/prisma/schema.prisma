@@ -96,6 +96,10 @@ model User {
   createdUsers User[]     @relation("UserCreatedBy")
   auditLogs    AuditLog[]
 
+  documentsUploaded Document[]     @relation("DocumentUploadedBy")
+  documentsDeleted  Document[]     @relation("DocumentDeletedBy")
+  notifications     Notification[]
+
   companiesCreated           Company[]                  @relation("CompanyCreatedBy")
   driversCreated             Driver[]                   @relation("DriverCreatedBy")
   vehicleTypesCreated        VehicleType[]              @relation("VehicleTypeCreatedBy")
@@ -1106,4 +1110,71 @@ model GstRecord {
   @@index([companyId, taxPeriod])
   @@index([hsnSac])
   @@map("gst_records")
+}
+
+// ---------------------------------------------------------------------------------
+// Phase 15 — documents and notifications
+// ---------------------------------------------------------------------------------
+
+enum DocumentEntityType {
+  DRIVER
+  VEHICLE
+  COMPANY
+  EXPENSE
+  DRIVER_PAYMENT
+  COMPANY_SETTLEMENT
+  TRIP_IMPORT
+  GST_RECORD
+}
+
+/// File attached to a business record. The bytes live in the storage driver under
+/// `storageKey`; files are only served through the authorized download route.
+/// Soft-deleted rows (and their files) are retained for audit.
+model Document {
+  id           Int                @id @default(autoincrement())
+  entityType   DocumentEntityType @map("entity_type")
+  entityId     Int                @map("entity_id")
+  /// Free-text label, e.g. "Driving licence", "RC", "Invoice".
+  category     String?            @db.VarChar(50)
+  fileName     String             @map("file_name") @db.VarChar(255)
+  /// Detected from the file bytes, never from the client.
+  mimeType     String             @map("mime_type") @db.VarChar(100)
+  sizeBytes    Int                @map("size_bytes")
+  storageKey   String             @unique @map("storage_key") @db.VarChar(255)
+  /// SHA-256 hex digest of the file.
+  checksum     String             @db.Char(64)
+  notes        String?            @db.VarChar(500)
+  uploadedById Int?               @map("uploaded_by_id")
+  createdAt    DateTime           @default(now()) @map("created_at")
+  deletedAt    DateTime?          @map("deleted_at")
+  deletedById  Int?               @map("deleted_by_id")
+  deleteReason String?            @map("delete_reason") @db.VarChar(500)
+
+  uploadedBy User? @relation("DocumentUploadedBy", fields: [uploadedById], references: [id], onDelete: SetNull)
+  deletedBy  User? @relation("DocumentDeletedBy", fields: [deletedById], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId, deletedAt])
+  @@map("documents")
+}
+
+/// In-app notification for one user. `dedupeKey` stops repeated alerts (e.g. the same
+/// document expiry) from being sent to the same user twice.
+model Notification {
+  id         Int       @id @default(autoincrement())
+  userId     Int       @map("user_id")
+  type       String    @db.VarChar(50)
+  title      String    @db.VarChar(200)
+  message    String    @db.VarChar(1000)
+  link       String?   @db.VarChar(255)
+  entityType String?   @map("entity_type") @db.VarChar(50)
+  entityId   Int?      @map("entity_id")
+  dedupeKey  String?   @map("dedupe_key") @db.VarChar(150)
+  readAt     DateTime? @map("read_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, readAt, id])
+  @@map("notifications")
 }

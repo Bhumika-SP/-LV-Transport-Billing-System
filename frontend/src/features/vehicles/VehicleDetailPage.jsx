@@ -20,6 +20,7 @@ import { get } from '../../lib/api';
 import { formatDate, formatDateTime, formatINR } from '../../lib/format';
 import RateHistoryTable from '../vehicle-types/RateHistoryTable';
 import VehicleFormModal from './VehicleFormModal';
+import DocumentsPanel from '../documents/DocumentsPanel';
 
 const periodColumns = [
   { key: 'startDate', header: 'From', render: (r) => formatDate(r.startDate) },
@@ -227,6 +228,17 @@ export default function VehicleDetailPage() {
             key: 'documents',
             label: 'Documents',
             content: <PhasePlaceholder what="Documents" phase={15} />,
+          },
+          {
+            key: 'documents',
+            label: 'Documents',
+            content: (
+              <DocumentsPanel
+                entityType="VEHICLE"
+                entityId={id}
+                canManage={can(PERMISSIONS.VEHICLE_MANAGE)}
+              />
+            ),
           },
         ]}
       />

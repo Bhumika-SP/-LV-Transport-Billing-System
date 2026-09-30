@@ -14,6 +14,7 @@ coverage/
 
 # Uploaded files (local storage driver)
 backend/storage/
+backend/storage-test/
 
 # Logs
 logs/

@@ -16,6 +16,7 @@ import { EmptyState, ErrorState, LoadingState } from '../../components/ui/States
 import { PERMISSIONS } from '../../config/permissions';
 import { get, post } from '../../lib/api';
 import { formatDate, formatDateTime, formatINR, formatKm } from '../../lib/format';
+import DocumentsPanel from '../documents/DocumentsPanel';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
 const ROW_FILTERS = ['', 'VALID', 'WARNING', 'ERROR', 'DUPLICATE', 'IMPORTED'];
@@ -236,6 +237,12 @@ export default function ImportBatchPage() {
       )}
 
       <Rows batch={batch} />
+      <h2 className="mb-2 mt-6 text-sm font-semibold text-slate-700">Documents</h2>
+      <DocumentsPanel
+        entityType="TRIP_IMPORT"
+        entityId={batch.id}
+        canManage={can(PERMISSIONS.TRIP_IMPORT)}
+      />
 
       <Modal
         open={confirming}

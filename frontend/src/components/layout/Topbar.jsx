@@ -1,7 +1,8 @@
-import { Bell, ChevronDown, KeyRound, LogOut, Menu } from 'lucide-react';
+import { ChevronDown, KeyRound, LogOut, Menu } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/auth-context';
+import NotificationBell from '../../features/notifications/NotificationBell';
 import ChangePasswordModal from './ChangePasswordModal';
 
 function UserMenu() {
@@ -100,15 +101,7 @@ export default function Topbar({ onMenuClick }) {
       <div className="hidden text-sm text-slate-500 lg:block">LV Transport</div>
 
       <div className="flex items-center gap-2">
-        {/* Notification center arrives in Phase 15. */}
-        <button
-          type="button"
-          className="rounded-full p-2 text-slate-400"
-          aria-label="Notifications (coming in a later phase)"
-          disabled
-        >
-          <Bell className="h-5 w-5" />
-        </button>
+        <NotificationBell />
         <UserMenu />
       </div>
     </header>

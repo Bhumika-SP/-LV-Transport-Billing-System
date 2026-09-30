@@ -19,20 +19,21 @@ MySQL 8 (`utf8mb4` / `utf8mb4_unicode_ci`) managed through Prisma 6 migrations.
 
 ## Migration log
 
-| Migration                               | Phase | Tables                                                                                                                 |
-| --------------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------- |
-| `20260930172127_init`                   | 0     | `settings`                                                                                                             |
-| `20260930174137_auth_rbac_audit`        | 2     | `roles`, `permissions`, `role_permissions`, `users`, `audit_logs`                                                      |
-| `20260930175805_master_data`            | 3     | `companies`, `drivers`, `vehicle_types`, `vehicle_type_rates`, `vehicles`, `vehicle_assignments`, `driver_assignments` |
-| `20260930182820_company_settlements`    | 4     | `company_settlements` (+ `PaymentMethod` enum)                                                                         |
-| `20260930184249_trips`                  | 5     | `trips` (+ `KmSource`, `TripSource`, `TripStatus` enums). UNIQUE(`company_id`, `external_trip_id`)                     |
-| `20260930191841_trip_imports`           | 6     | `import_templates`, `import_template_mappings`, `trip_imports`, `import_rows`; FK `trips.import_id`                    |
-| `20260930194859_driver_earnings`        | 7     | `driver_earnings` (ALLOWANCE/OTHER_EARNING), `driver_adjustments` (POSITIVE_ADJUSTMENT/OTHER_DEDUCTION)                |
-| `20260930200411_expenses_advances`      | 8     | `driver_expenses` (paidBy LV/DRIVER), `driver_advances`, `advance_recoveries`                                          |
-| `20260930202011_driver_settlements`     | 9     | `driver_settlements` (UNIQUE driver+month), `driver_settlement_items`, `driver_settlement_revisions`                   |
-| `20260930204444_driver_payments`        | 10    | `driver_payments` (VALID/REVERSED)                                                                                     |
-| `20260930212550_settlement_allocations` | 11    | `driver_settlement_allocations` (company share of finalized settlements)                                               |
-| `20260930214806_gst`                    | 14    | `tax_rate_configs` (HSN/SAC rates with effective dates), `gst_records` (outward/inward invoices, computed tax heads)   |
+| Migration                                | Phase | Tables                                                                                                                 |
+| ---------------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------- |
+| `20260930172127_init`                    | 0     | `settings`                                                                                                             |
+| `20260930174137_auth_rbac_audit`         | 2     | `roles`, `permissions`, `role_permissions`, `users`, `audit_logs`                                                      |
+| `20260930175805_master_data`             | 3     | `companies`, `drivers`, `vehicle_types`, `vehicle_type_rates`, `vehicles`, `vehicle_assignments`, `driver_assignments` |
+| `20260930182820_company_settlements`     | 4     | `company_settlements` (+ `PaymentMethod` enum)                                                                         |
+| `20260930184249_trips`                   | 5     | `trips` (+ `KmSource`, `TripSource`, `TripStatus` enums). UNIQUE(`company_id`, `external_trip_id`)                     |
+| `20260930191841_trip_imports`            | 6     | `import_templates`, `import_template_mappings`, `trip_imports`, `import_rows`; FK `trips.import_id`                    |
+| `20260930194859_driver_earnings`         | 7     | `driver_earnings` (ALLOWANCE/OTHER_EARNING), `driver_adjustments` (POSITIVE_ADJUSTMENT/OTHER_DEDUCTION)                |
+| `20260930200411_expenses_advances`       | 8     | `driver_expenses` (paidBy LV/DRIVER), `driver_advances`, `advance_recoveries`                                          |
+| `20260930202011_driver_settlements`      | 9     | `driver_settlements` (UNIQUE driver+month), `driver_settlement_items`, `driver_settlement_revisions`                   |
+| `20260930204444_driver_payments`         | 10    | `driver_payments` (VALID/REVERSED)                                                                                     |
+| `20260930212550_settlement_allocations`  | 11    | `driver_settlement_allocations` (company share of finalized settlements)                                               |
+| `20260930220110_documents_notifications` | 15    | `documents` (polymorphic attachments, soft delete), `notifications` (per-user, UNIQUE user+dedupe key)                 |
+| `20260930214806_gst`                     | 14    | `tax_rate_configs` (HSN/SAC rates with effective dates), `gst_records` (outward/inward invoices, computed tax heads)   |
 
 ## Entity relationship design
 
@@ -94,6 +95,8 @@ erDiagram
 
   gst_records }o--|| companies : "optional"
   tax_rate_configs ||--o{ gst_records : ""
+  users ||--o{ notifications : "own inbox"
+  users ||--o{ documents : "uploaded"
 ```
 
 ### Tables
@@ -166,13 +169,13 @@ locks them. Locked rows cannot be edited or voided.
 
 #### Tax, documents, notifications, audit (Phases 14–16)
 
-| Table              | Key columns                                                                                                                                                                                                                            | Notes                                                                                                     |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `tax_rate_configs` | `hsn_sac`, `description`, `rate`, `cess_rate`, `effective_from`, `effective_to`                                                                                                                                                        | Rates never hard-coded.                                                                                   |
-| `gst_records`      | `direction` (`OUTWARD`/`INWARD`), `company_id` NULL, `counterparty_gstin`, `invoice_number`, `invoice_date`, `tax_period`, `hsn_sac`, `taxable_value`, `tax_rate`, `cgst`, `sgst`, `igst`, `cess`, `place_of_supply`, `reverse_charge` | UNIQUE(`direction`,`counterparty_gstin`,`invoice_number`). Reporting/preparation only.                    |
-| `documents`        | `entity_type`, `entity_id`, `category`, `file_name`, `mime_type`, `size_bytes`, `storage_key`, `checksum`, `uploaded_by_id`, `deleted_at`                                                                                              | Polymorphic link. Served only through an authorized download endpoint; never public URLs.                 |
-| `notifications`    | `user_id`, `type`, `title`, `message`, `entity_type`, `entity_id`, `read_at`                                                                                                                                                           | In-app. A future `notification_deliveries` table adds email/SMS/WhatsApp channels.                        |
-| `audit_logs`       | `user_id`, `action`, `entity_type`, `entity_id`, `previous_value` JSON, `new_value` JSON, `reason`, `ip`, `user_agent`, `request_id`, `created_at`                                                                                     | Append-only: no update/delete API. In production the DB user is granted INSERT/SELECT only on this table. |
+| Table              | Key columns                                                                                                                                                                                                                                                                                                         | Notes                                                                                                                                                                    |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `tax_rate_configs` | `hsn_sac`, `description`, `rate`, `cess_rate`, `effective_from`, `effective_to`                                                                                                                                                                                                                                     | Rates never hard-coded.                                                                                                                                                  |
+| `gst_records`      | `direction` (`OUTWARD`/`INWARD`), `company_id` NULL, `counterparty_gstin`, `invoice_number`, `invoice_date`, `tax_period`, `hsn_sac`, `taxable_value`, `tax_rate`, `cgst`, `sgst`, `igst`, `cess`, `place_of_supply`, `reverse_charge`                                                                              | UNIQUE(`direction`,`counterparty_gstin`,`invoice_number`). Reporting/preparation only.                                                                                   |
+| `documents`        | `entity_type` (DRIVER, VEHICLE, COMPANY, EXPENSE, DRIVER_PAYMENT, COMPANY_SETTLEMENT, TRIP_IMPORT, GST_RECORD), `entity_id`, `category`, `file_name`, `mime_type` (detected from bytes), `size_bytes`, `storage_key` UNIQUE, `checksum` (SHA-256), `uploaded_by_id`, `deleted_at`, `deleted_by_id`, `delete_reason` | Polymorphic link, INDEX(`entity_type`,`entity_id`,`deleted_at`). Served only through an authorized download endpoint; never public URLs. Soft delete keeps row and file. |
+| `notifications`    | `user_id`, `type`, `title`, `message`, `link`, `entity_type`, `entity_id`, `dedupe_key`, `read_at`                                                                                                                                                                                                                  | In-app. UNIQUE(`user_id`,`dedupe_key`) prevents repeated alerts. Email/SMS/WhatsApp are channel adapters (see ARCHITECTURE.md).                                          |
+| `audit_logs`       | `user_id`, `action`, `entity_type`, `entity_id`, `previous_value` JSON, `new_value` JSON, `reason`, `ip`, `user_agent`, `request_id`, `created_at`                                                                                                                                                                  | Append-only: no update/delete API. In production the DB user is granted INSERT/SELECT only on this table.                                                                |
 
 ### Rate history rules
 

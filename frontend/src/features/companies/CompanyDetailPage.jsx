@@ -19,6 +19,7 @@ import { formatDate, formatDateTime } from '../../lib/format';
 import CompanySettlementTable from '../company-settlements/CompanySettlementTable';
 import { MonthlyProfitView } from '../profit/ProfitPages';
 import CompanyFormModal from './CompanyFormModal';
+import DocumentsPanel from '../documents/DocumentsPanel';
 
 const period = (r) =>
   `${formatDate(r.startDate)} – ${r.endDate ? formatDate(r.endDate) : 'present'}`;
@@ -179,6 +180,17 @@ export default function CompanyDetailPage() {
           ...(can(PERMISSIONS.PROFIT_VIEW)
             ? [{ key: 'profit', label: 'Profit', content: <MonthlyProfitView companyId={id} /> }]
             : []),
+          {
+            key: 'documents',
+            label: 'Documents',
+            content: (
+              <DocumentsPanel
+                entityType="COMPANY"
+                entityId={id}
+                canManage={can(PERMISSIONS.COMPANY_MANAGE)}
+              />
+            ),
+          },
         ]}
       />
       <CompanyFormModal open={editing} onClose={() => setEditing(false)} company={company} />

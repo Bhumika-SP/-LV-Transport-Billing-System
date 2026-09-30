@@ -30,6 +30,7 @@ import TripTable from '../trips/TripTable';
 import { get } from '../../lib/api';
 import { formatDate, formatDateTime } from '../../lib/format';
 import DriverFormModal from './DriverFormModal';
+import DocumentsPanel from '../documents/DocumentsPanel';
 
 function AssignmentHistory({ driverId }) {
   const { data, isLoading, error } = useQuery({
@@ -238,6 +239,17 @@ export default function DriverDetailPage() {
             key: 'assignments',
             label: 'Assignment History',
             content: <AssignmentHistory driverId={id} />,
+          },
+          {
+            key: 'documents',
+            label: 'Documents',
+            content: (
+              <DocumentsPanel
+                entityType="DRIVER"
+                entityId={id}
+                canManage={can(PERMISSIONS.DRIVER_MANAGE)}
+              />
+            ),
           },
         ]}
       />

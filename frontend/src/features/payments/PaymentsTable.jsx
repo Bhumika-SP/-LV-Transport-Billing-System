@@ -19,6 +19,7 @@ import { get } from '../../lib/api';
 import { formatDate, formatINR, formatMonth } from '../../lib/format';
 import { PAYMENT_METHOD_OPTIONS, paymentMethodLabel } from '../../lib/forms';
 import { useReversePayment } from './usePayments';
+import { DocumentsButton } from '../documents/DocumentsPanel';
 
 /** Payment history with filters and totals by method. `driverId` pins one driver. */
 export default function PaymentsTable({ driverId }) {
@@ -85,6 +86,19 @@ export default function PaymentsTable({ driverId }) {
     },
     { key: 'createdBy', header: 'Recorded by', render: (p) => p.createdBy?.name ?? '—' },
   ];
+  columns.push({
+    key: 'documents',
+    header: <span className="sr-only">Documents</span>,
+    align: 'right',
+    render: (r) => (
+      <DocumentsButton
+        entityType="DRIVER_PAYMENT"
+        entityId={r.id}
+        title={`Payment proof · ${r.driver?.fullName ?? ''}`}
+        canManage={can(PERMISSIONS.PAYMENT_RECORD)}
+      />
+    ),
+  });
   if (can(PERMISSIONS.PAYMENT_REVERSE)) {
     columns.push({
       key: 'actions',

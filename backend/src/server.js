@@ -3,6 +3,7 @@ import { env } from './config/env.js';
 import { logger } from './lib/logger.js';
 import { prisma } from './lib/prisma.js';
 import { syncRolesAndPermissions } from './modules/auth/rbac.js';
+import { startNotificationJobs } from './modules/notifications/events.js';
 
 const app = createApp();
 
@@ -18,6 +19,8 @@ try {
 const server = app.listen(env.PORT, () => {
   logger.info(`LV Billing API listening on http://localhost:${env.PORT} (${env.NODE_ENV})`);
 });
+
+if (env.NOTIFICATION_CHECK_HOURS > 0) startNotificationJobs(env.NOTIFICATION_CHECK_HOURS);
 
 function shutdown(signal) {
   logger.info(`${signal} received, shutting down`);

@@ -1,4 +1,5 @@
 import { execSync } from 'node:child_process';
+import { rmSync } from 'node:fs';
 
 /**
  * Runs once before the suite: applies migrations to the test database.
@@ -17,4 +18,6 @@ export default function setup() {
     );
   }
   execSync('npx prisma migrate deploy', { stdio: 'pipe', env: process.env });
+  // Teardown: remove documents uploaded by the tests.
+  return () => rmSync('storage-test', { recursive: true, force: true });
 }

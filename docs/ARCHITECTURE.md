@@ -106,6 +106,21 @@ succeeds.
 - Cookie, authorization and password fields are redacted from logs.
 - Secrets only in environment variables. `.env` is git-ignored.
 
+## Documents and notifications (Phase 15)
+
+- **Storage driver** (`src/lib/storage.js`): `put/get/remove` with `local` (disk) and
+  `s3` (any S3-compatible bucket, SDK loaded lazily) implementations. Keys are generated
+  server-side (`<entity>/<id>/<uuid><ext>`), never from the client file name.
+- **Access** mirrors the owning record through `DOCUMENT_ENTITIES` in
+  `documents.service.js`, so no role can reach a file for a record it cannot see.
+- **File type** is decided by magic bytes (`utils/file-type.js`); the download sends
+  `nosniff` and `no-store`.
+- **Notifications** (`notifications/notify.js`): events resolve recipients by permission
+  (plus named users), then hand the message to each channel in `CHANNELS`. Only the
+  in-app channel exists; email/SMS/WhatsApp adapters implement the same
+  `send(recipients, notification)`. Dispatch runs after the business transaction commits
+  and never throws. `dedupeKey` + UNIQUE(user, key) make scheduled checks idempotent.
+
 ## Production topology
 
 Recommended: **Vercel rewrites `/api/*` to the Render service** (see `frontend/vercel.json`).

@@ -168,6 +168,15 @@ OUTSTANDING = FINAL SETTLEMENT − TOTAL VALID PAYMENTS
 - The home state (`gst.homeStateCode` setting) is informational; the supply type is chosen per record.
 - Admin and Auditor may view and record GST; only Admin changes tax configuration; Billers have no GST access.
 
+## R13. Documents and notifications (Phase 15)
+
+- A document can be seen by exactly the roles that can see its record; it can be added or removed by the roles that manage that record.
+- Accepted types are PDF, JPEG, PNG and WEBP, decided from the file's bytes (a renamed HTML file is rejected). Maximum 10 MB.
+- Documents are never deleted: removal needs a reason, hides the document and keeps the row and file for audit.
+- Notifications go to roles by permission, never to the person who performed the action.
+- Expiry reminders cover driving licence, insurance, fitness and permit within 30 days (and once more after expiry). Company settlements still PENDING for a month that has ended are reminded weekly. Checks run every `NOTIFICATION_CHECK_HOURS` (default 6) and on demand by an Admin.
+- A notification never blocks or rolls back the business action that caused it.
+
 ## Required acceptance scenarios (spec §76–80)
 
 | #   | Scenario                                                                                | Expected                                                        |

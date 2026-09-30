@@ -69,8 +69,24 @@ The file also provides the SPA fallback to `index.html`.
 
 ## 4. Documents (Phase 15)
 
-Private bucket, no public ACLs. Files are served only through the authorized API
-download endpoint.
+Files are served only through the authorized API download endpoint; there are no
+public URLs.
+
+- **Render (ephemeral disk):** use an S3-compatible **private** bucket (Cloudflare R2,
+  AWS S3, Backblaze B2). Set `STORAGE_DRIVER=s3`, `S3_BUCKET`, `S3_REGION`
+  (`auto` for R2), `S3_ENDPOINT` (omit for AWS), `S3_ACCESS_KEY_ID`,
+  `S3_SECRET_ACCESS_KEY`. Give the key access to that bucket only
+  (PutObject/GetObject/DeleteObject). Objects are written with server-side encryption.
+- **Server with a persistent disk:** `STORAGE_DRIVER=local` and `STORAGE_DIR` on the
+  persistent volume. Include it in backups.
+- Removal is a soft delete; files are kept. Apply bucket lifecycle rules only after
+  agreeing a retention period with the business.
+
+### Notifications
+
+`NOTIFICATION_CHECK_HOURS` (default 6, `0` disables) controls the in-process check for
+expiring documents and pending company settlements. Alerts are deduplicated in the
+database, so several instances or restarts do not send duplicates.
 
 ## 5. Logging
 

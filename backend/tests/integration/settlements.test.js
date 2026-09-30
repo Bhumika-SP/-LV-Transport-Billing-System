@@ -199,6 +199,13 @@ describe('driver settlement engine (spec §27–31, scenario §76)', () => {
       })
     ).map((a) => a.action);
     expect(actions).toEqual(['CREATE', 'SUBMIT', 'APPROVE', 'FINALIZE']);
+
+    // Workflow notifications (spec §54): approvers hear of submissions, payers of finalization.
+    const types = async (agent) =>
+      (await agent.get('/api/notifications')).body.data.map((n) => n.type).sort();
+    expect(await types(as.admin)).toEqual(['SETTLEMENT_SUBMITTED']);
+    expect(await types(as.biller)).toEqual(['SETTLEMENT_APPROVED', 'SETTLEMENT_FINALIZED']);
+    expect(await types(as.auditor)).toEqual([]);
   });
 
   it('changing data after calculation makes the settlement DRAFT; stale ones cannot be submitted', async () => {

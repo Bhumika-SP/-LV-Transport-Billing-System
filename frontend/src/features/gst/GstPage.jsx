@@ -24,6 +24,7 @@ import { currentMonth, formatDate, formatINR, formatMonth, today } from '../../l
 import { v } from '../../lib/forms';
 import ReportsPage from '../reports/ReportsPage';
 import GstRecordForm from './GstRecordForm';
+import { DocumentsButton } from '../documents/DocumentsPanel';
 
 export function Disclaimer() {
   return (
@@ -162,6 +163,19 @@ function Records() {
       render: (r) => <StatusBadge status={r.status === 'VOID' ? 'CANCELLED' : 'ACTIVE'} />,
     },
   ];
+  columns.push({
+    key: 'documents',
+    header: <span className="sr-only">Documents</span>,
+    align: 'right',
+    render: (r) => (
+      <DocumentsButton
+        entityType="GST_RECORD"
+        entityId={r.id}
+        title={`Documents · ${r.invoiceNumber}`}
+        canManage={can(PERMISSIONS.GST_MANAGE)}
+      />
+    ),
+  });
   if (can(PERMISSIONS.GST_MANAGE)) {
     columns.push({
       key: 'actions',

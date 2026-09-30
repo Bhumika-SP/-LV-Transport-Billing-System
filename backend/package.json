@@ -20,6 +20,7 @@
     "create-admin": "node --env-file-if-exists=.env scripts/create-admin.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1144.0",
     "@prisma/client": "^6.19.0",
     "argon2": "^0.44.0",
     "cookie-parser": "^1.4.7",

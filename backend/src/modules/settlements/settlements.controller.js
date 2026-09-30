@@ -1,4 +1,5 @@
 import { created, ok, paged } from '../../utils/response.js';
+import { settlementEvent } from '../notifications/events.js';
 import * as service from './settlements.service.js';
 
 const id = (req) => req.valid.params.id;
@@ -22,20 +23,30 @@ export async function calculate(req, res) {
   ok(res, await service.calculateSettlement(id(req), req.user, req));
 }
 export async function submit(req, res) {
-  ok(res, await service.submitSettlement(id(req), req.user, req));
+  const s = await service.submitSettlement(id(req), req.user, req);
+  await settlementEvent('SUBMITTED', s, req.user);
+  ok(res, s);
 }
 export async function withdraw(req, res) {
   ok(res, await service.returnToDraft(id(req), req.valid.body, req.user, req, { reject: false }));
 }
 export async function approve(req, res) {
-  ok(res, await service.approveSettlement(id(req), req.user, req));
+  const s = await service.approveSettlement(id(req), req.user, req);
+  await settlementEvent('APPROVED', s, req.user);
+  ok(res, s);
 }
 export async function reject(req, res) {
-  ok(res, await service.returnToDraft(id(req), req.valid.body, req.user, req, { reject: true }));
+  const s = await service.returnToDraft(id(req), req.valid.body, req.user, req, { reject: true });
+  await settlementEvent('REJECTED', s, req.user, req.valid.body.reason);
+  ok(res, s);
 }
 export async function finalize(req, res) {
-  ok(res, await service.finalizeSettlement(id(req), req.user, req));
+  const s = await service.finalizeSettlement(id(req), req.user, req);
+  await settlementEvent('FINALIZED', s, req.user);
+  ok(res, s);
 }
 export async function reopen(req, res) {
-  ok(res, await service.reopenSettlement(id(req), req.valid.body, req.user, req));
+  const s = await service.reopenSettlement(id(req), req.valid.body, req.user, req);
+  await settlementEvent('REOPENED', s, req.user, req.valid.body.reason);
+  ok(res, s);
 }

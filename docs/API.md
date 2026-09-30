@@ -347,6 +347,42 @@ Nothing is filed with the GST portal. Rates are data (`tax_rate_configs`), never
 | GET    | `/gst/hsn-summary`      | gst.view          | Grouped by HSN/SAC                                                                                                                                                                                                                                                                                        |
 | GET    | `/gst/reconciliation`   | gst.view          | Per company and period: amount received (company settlements) vs invoiced value, difference                                                                                                                                                                                                               |
 
+### Documents — `/api/documents` (Phase 15)
+
+Access follows the record the document belongs to (no separate document permission):
+
+| entityType         | View needs              | Upload / delete needs                               |
+| ------------------ | ----------------------- | --------------------------------------------------- |
+| DRIVER             | master.view             | driver.manage                                       |
+| VEHICLE            | master.view             | vehicle.manage                                      |
+| COMPANY            | master.view             | company.manage                                      |
+| EXPENSE            | driver_finance.view     | lv_expense.manage (LV-paid) / driver_expense.manage |
+| DRIVER_PAYMENT     | payment.view            | payment.record                                      |
+| COMPANY_SETTLEMENT | company_settlement.view | company_settlement.manage                           |
+| TRIP_IMPORT        | import.view             | trip.import                                         |
+| GST_RECORD         | gst.view                | gst.manage                                          |
+
+| Method | Path                             | Notes                                                                                                                                            |
+| ------ | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| GET    | `/documents?entityType&entityId` | Active documents for a record (no storage keys exposed)                                                                                          |
+| POST   | `/documents`                     | multipart: `entityType`, `entityId`, `category?`, `notes?`, `file`. PDF/JPEG/PNG/WEBP verified by magic bytes; 10 MB max (413). Audited `UPLOAD` |
+| GET    | `/documents/:id/download`        | Streams the file (`?inline=1` to view). `Cache-Control: private, no-store`, `X-Content-Type-Options: nosniff`                                    |
+| DELETE | `/documents/:id`                 | `{ reason }`. Soft delete; row and file retained; audited `DELETE`                                                                               |
+
+### Notifications — `/api/notifications` (Phase 15)
+
+Every user sees only their own notifications.
+
+| Method | Path                             | Notes                                                              |
+| ------ | -------------------------------- | ------------------------------------------------------------------ |
+| GET    | `/notifications?unreadOnly&page` | Newest first, paginated                                            |
+| GET    | `/notifications/unread-count`    | `{ count }` (the header bell polls this every minute)              |
+| POST   | `/notifications/:id/read`        | 404 for another user's notification                                |
+| POST   | `/notifications/read-all`        | `{ updated }`                                                      |
+| POST   | `/notifications/run-checks`      | settings.manage. Runs the expiry and pending-settlement checks now |
+
+Events: `SETTLEMENT_SUBMITTED` → settlement.approve holders · `SETTLEMENT_APPROVED` → settlement.finalize holders and the submitter · `SETTLEMENT_REJECTED` → preparer · `SETTLEMENT_FINALIZED` → payment.record holders · `SETTLEMENT_REOPENED` → settlement.prepare holders · `IMPORT_COMPLETED` → import.view · `IMPORT_FAILED` → trip.import · `PAYMENT_REVERSED` → audit.view · `DOCUMENT_EXPIRY` (30 days) → master.view · `COMPANY_SETTLEMENT_PENDING` (past months, weekly) → company_settlement.manage. The actor is never notified of their own action.
+
 ### Planned modules (spec §61)
 
 `/api/auth`, `/api/users`, `/api/companies`, `/api/drivers`, `/api/vehicles`,

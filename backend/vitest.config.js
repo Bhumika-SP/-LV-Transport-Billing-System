@@ -18,6 +18,9 @@ export default defineConfig({
       DATABASE_URL: process.env.DATABASE_URL ?? '',
       JWT_SECRET: 'test-only-jwt-secret-that-is-at-least-32-chars',
       LOGIN_RATE_LIMIT_MAX: '1000',
+      // Uploaded test documents go to a throwaway folder (removed by globalSetup).
+      STORAGE_DIR: './storage-test',
+      NOTIFICATION_CHECK_HOURS: '0',
     },
   },
 });

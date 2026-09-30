@@ -1,6 +1,7 @@
 import { created, ok, paged } from '../../utils/response.js';
 import * as templates from './import-templates.service.js';
 import { createImportFields } from './imports.schemas.js';
+import { importConfirmed, importFailed } from '../notifications/events.js';
 import * as imports from './trip-imports.service.js';
 
 // ---- Templates ---------------------------------------------------------------------
@@ -38,7 +39,15 @@ export async function rows(req, res) {
   paged(res, await imports.listImportRows(req.valid.params.id, req.valid.query));
 }
 export async function confirm(req, res) {
-  ok(res, await imports.confirmImport(req.valid.params.id, req.valid.body, req.user, req));
+  const id = req.valid.params.id;
+  try {
+    const batch = await imports.confirmImport(id, req.valid.body, req.user, req);
+    await importConfirmed(batch, req.user);
+    ok(res, batch);
+  } catch (err) {
+    if (err.code === 'IMPORT_FAILED') await importFailed(id, req.user, err.message);
+    throw err;
+  }
 }
 export async function discard(req, res) {
   ok(res, await imports.discardImport(req.valid.params.id, req.user, req));

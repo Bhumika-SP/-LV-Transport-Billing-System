@@ -1,4 +1,5 @@
 import { created, ok, paged } from '../../utils/response.js';
+import { paymentReversed } from '../notifications/events.js';
 import * as service from './payments.service.js';
 
 export async function list(req, res) {
@@ -12,5 +13,7 @@ export async function record(req, res) {
   created(res, await service.recordPayment(settlementId, data, req.user, req));
 }
 export async function reverse(req, res) {
-  ok(res, await service.reversePayment(req.valid.params.id, req.valid.body, req.user, req));
+  const payment = await service.reversePayment(req.valid.params.id, req.valid.body, req.user, req);
+  await paymentReversed(payment, req.user, req.valid.body.reason);
+  ok(res, payment);
 }

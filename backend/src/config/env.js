@@ -33,12 +33,32 @@ const envSchema = z
     COOKIE_SECURE: booleanString,
     LOGIN_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
     LOGIN_RATE_LIMIT_WINDOW_MINUTES: z.coerce.number().positive().default(15),
+
+    // Document storage (Phase 15)
+    STORAGE_DRIVER: z.enum(['local', 's3']).default('local'),
+    STORAGE_DIR: z.string().default('./storage'),
+    S3_BUCKET: z.string().optional(),
+    S3_REGION: z.string().default('auto'),
+    S3_ENDPOINT: z.string().url().optional(),
+    S3_ACCESS_KEY_ID: z.string().optional(),
+    S3_SECRET_ACCESS_KEY: z.string().optional(),
+
+    // Notifications (Phase 15): background check interval in hours; 0 disables the timer.
+    NOTIFICATION_CHECK_HOURS: z.coerce.number().min(0).max(168).default(6),
   })
   .transform((e) => ({
     ...e,
     // Secure cookies by default in production; SameSite=None always requires Secure.
     COOKIE_SECURE: e.COOKIE_SECURE ?? (e.NODE_ENV === 'production' || e.COOKIE_SAMESITE === 'none'),
   }))
+  .refine(
+    (e) =>
+      e.STORAGE_DRIVER !== 's3' || (e.S3_BUCKET && e.S3_ACCESS_KEY_ID && e.S3_SECRET_ACCESS_KEY),
+    {
+      message: 'STORAGE_DRIVER=s3 requires S3_BUCKET, S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY',
+      path: ['STORAGE_DRIVER'],
+    },
+  )
   .refine((e) => e.COOKIE_SAMESITE !== 'none' || e.COOKIE_SECURE, {
     message: 'COOKIE_SAMESITE=none requires COOKIE_SECURE=true',
     path: ['COOKIE_SECURE'],

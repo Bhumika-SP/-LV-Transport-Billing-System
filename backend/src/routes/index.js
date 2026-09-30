@@ -7,7 +7,9 @@ import companySettlementsRoutes from '../modules/company-settlements/company-set
 import advancesRoutes from '../modules/advances/advances.routes.js';
 import dashboardRoutes from '../modules/dashboard/dashboard.routes.js';
 import driversRoutes from '../modules/drivers/drivers.routes.js';
+import documentsRoutes from '../modules/documents/documents.routes.js';
 import gstRoutes from '../modules/gst/gst.routes.js';
+import notificationsRoutes from '../modules/notifications/notifications.routes.js';
 import { driverExpensesRouter, lvExpensesRouter } from '../modules/expenses/expenses.routes.js';
 import { adjustmentsRouter, earningsRouter } from '../modules/earnings/earnings.routes.js';
 import { importsRouter, templatesRouter } from '../modules/imports/imports.routes.js';
@@ -62,5 +64,7 @@ api.use('/profit', profitRoutes);
 api.use('/dashboard', dashboardRoutes);
 api.use('/reports', reportsRoutes);
 api.use('/gst', gstRoutes);
+api.use('/documents', documentsRoutes);
+api.use('/notifications', notificationsRoutes);
 
 export default api;

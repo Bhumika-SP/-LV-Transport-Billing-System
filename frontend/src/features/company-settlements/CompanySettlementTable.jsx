@@ -180,6 +180,19 @@ export default function CompanySettlementTable({ companyId }) {
     { key: 'referenceNumber', header: 'Reference' },
   ];
 
+  columns.push({
+    key: 'documents',
+    header: <span className="sr-only">Documents</span>,
+    align: 'right',
+    render: (r) => (
+      <DocumentsButton
+        entityType="COMPANY_SETTLEMENT"
+        entityId={r.id}
+        title={`Documents · ${r.company?.name ?? ''} ${r.settlementMonth}`}
+        canManage={canManage}
+      />
+    ),
+  });
   if (canManage || canCorrect) {
     columns.push({
       key: 'actions',

@@ -17,6 +17,7 @@ import { toSelect, useOptions } from '../../hooks/useOptions';
 import { get, post } from '../../lib/api';
 import { formatDate, formatINR, formatMonth } from '../../lib/format';
 import DriverItemFormModal from './DriverItemFormModal';
+import { DocumentsButton } from '../documents/DocumentsPanel';
 
 /**
  * List of driver line items for one resource (earnings, adjustments, driver-expenses…)
@@ -117,6 +118,20 @@ export default function DriverItemsTable({
     },
     { key: 'createdBy', header: 'Recorded by', render: (i) => i.createdBy?.name ?? '—' },
   ];
+  if (config.withReceipt)
+    columns.push({
+      key: 'documents',
+      header: <span className="sr-only">Documents</span>,
+      align: 'right',
+      render: (r) => (
+        <DocumentsButton
+          entityType="EXPENSE"
+          entityId={r.id}
+          title={`Documents · ${formatDate(r.expenseDate)}`}
+          canManage={canManage}
+        />
+      ),
+    });
   if (canManage) {
     columns.push({
       key: 'actions',
