@@ -177,6 +177,12 @@ OUTSTANDING = FINAL SETTLEMENT − TOTAL VALID PAYMENTS
 - Expiry reminders cover driving licence, insurance, fitness and permit within 30 days (and once more after expiry). Company settlements still PENDING for a month that has ended are reminded weekly. Checks run every `NOTIFICATION_CHECK_HOURS` (default 6) and on demand by an Admin.
 - A notification never blocks or rolls back the business action that caused it.
 
+## R14. Audit (Phase 16)
+
+- Every login (successful and failed), logout, password and role change, create/update/status change, receipt, reversal, reopen, approval, finalization, payment, import, export, upload and document removal is recorded with the user, time, IP, browser, request ID, before/after values and reason.
+- The trail is append-only. No screen or API edits or deletes it, and database triggers reject `UPDATE` and `DELETE` on `audit_logs` even from direct SQL.
+- Admin and Auditor can search the trail and see any record's full history; Billers cannot.
+
 ## Required acceptance scenarios (spec §76–80)
 
 | #   | Scenario                                                                                | Expected                                                        |

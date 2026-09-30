@@ -20,6 +20,7 @@ import { get } from '../../lib/api';
 import { formatDate, formatDateTime, formatINR } from '../../lib/format';
 import RateHistoryTable from '../vehicle-types/RateHistoryTable';
 import VehicleFormModal from './VehicleFormModal';
+import EntityHistory from '../audit/EntityHistory';
 import DocumentsPanel from '../documents/DocumentsPanel';
 
 const periodColumns = [
@@ -240,6 +241,15 @@ export default function VehicleDetailPage() {
               />
             ),
           },
+          ...(can(PERMISSIONS.AUDIT_VIEW)
+            ? [
+                {
+                  key: 'history',
+                  label: 'History',
+                  content: <EntityHistory entityType="Vehicle" entityId={id} />,
+                },
+              ]
+            : []),
         ]}
       />
       <VehicleFormModal open={editing} onClose={() => setEditing(false)} vehicle={vehicle} />

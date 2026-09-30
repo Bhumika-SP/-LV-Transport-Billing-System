@@ -19,6 +19,7 @@ import { formatDate, formatDateTime } from '../../lib/format';
 import CompanySettlementTable from '../company-settlements/CompanySettlementTable';
 import { MonthlyProfitView } from '../profit/ProfitPages';
 import CompanyFormModal from './CompanyFormModal';
+import EntityHistory from '../audit/EntityHistory';
 import DocumentsPanel from '../documents/DocumentsPanel';
 
 const period = (r) =>
@@ -191,6 +192,15 @@ export default function CompanyDetailPage() {
               />
             ),
           },
+          ...(can(PERMISSIONS.AUDIT_VIEW)
+            ? [
+                {
+                  key: 'history',
+                  label: 'History',
+                  content: <EntityHistory entityType="Company" entityId={id} />,
+                },
+              ]
+            : []),
         ]}
       />
       <CompanyFormModal open={editing} onClose={() => setEditing(false)} company={company} />

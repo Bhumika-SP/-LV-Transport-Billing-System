@@ -121,7 +121,7 @@ Full guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 | 13    | Reports                                                               | ✅ Complete |
 | 14    | GST / finance                                                         | ✅ Complete |
 | 15    | Documents & notifications                                             | ✅ Complete |
-| 16    | Audit                                                                 |             |
+| 16    | Audit                                                                 | ✅ Complete |
 | 17    | Testing                                                               |             |
 | 18    | Production hardening                                                  |             |
 | 19    | Deployment                                                            |             |

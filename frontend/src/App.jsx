@@ -12,6 +12,7 @@ import AdvancesPage from './features/driver-finance/AdvancesPage';
 import EarningsPage from './features/driver-finance/EarningsPage';
 import { DriverExpensesPage, LvExpensesPage } from './features/driver-finance/ExpensePages';
 import DriversPage from './features/drivers/DriversPage';
+import AuditLogsPage from './features/audit/AuditLogsPage';
 import GstPage, { TaxReportsPage } from './features/gst/GstPage';
 import ImportBatchPage from './features/imports/ImportBatchPage';
 import NotificationsPage from './features/notifications/NotificationsPage';
@@ -75,6 +76,7 @@ const PAGES = {
   '/reconciliation': ReconciliationPage,
   '/exports': ExportsPage,
   '/gst': GstPage,
+  '/audit': AuditLogsPage,
   '/tax-reports': TaxReportsPage,
   '/reports/drivers': DriverReportsPage,
   '/reports/trips': TripReportsPage,

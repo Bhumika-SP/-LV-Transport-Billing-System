@@ -24,6 +24,7 @@ import { ErrorState, LoadingState } from '../../components/ui/States';
 import { PERMISSIONS } from '../../config/permissions';
 import { get, post } from '../../lib/api';
 import { formatDate, formatDateTime, formatINR, formatMonth } from '../../lib/format';
+import EntityHistory from '../audit/EntityHistory';
 import SettlementPayments from '../payments/SettlementPayments';
 
 /** Component key → the settlement item component codes it aggregates. */
@@ -317,6 +318,7 @@ function Workflow({ s }) {
 
 export default function SettlementDetailPage() {
   const id = Number(useParams().id);
+  const { can } = useAuth();
   const {
     data: s,
     isLoading,
@@ -359,6 +361,11 @@ export default function SettlementDetailPage() {
         <div className="space-y-4 lg:col-span-2">
           <Calculation s={s} />
           <SettlementPayments settlement={s} />
+          {can(PERMISSIONS.AUDIT_VIEW) && (
+            <Card title="Audit history (calculation, approval, finalization, reopen)">
+              <EntityHistory entityType="DriverSettlement" entityId={s.id} />
+            </Card>
+          )}
         </div>
         <div className="space-y-4">
           <Card title="Payment">

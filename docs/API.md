@@ -383,6 +383,17 @@ Every user sees only their own notifications.
 
 Events: `SETTLEMENT_SUBMITTED` → settlement.approve holders · `SETTLEMENT_APPROVED` → settlement.finalize holders and the submitter · `SETTLEMENT_REJECTED` → preparer · `SETTLEMENT_FINALIZED` → payment.record holders · `SETTLEMENT_REOPENED` → settlement.prepare holders · `IMPORT_COMPLETED` → import.view · `IMPORT_FAILED` → trip.import · `PAYMENT_REVERSED` → audit.view · `DOCUMENT_EXPIRY` (30 days) → master.view · `COMPANY_SETTLEMENT_PENDING` (past months, weekly) → company_settlement.manage. The actor is never notified of their own action.
 
+### Audit — `/api/audit` (Phase 16)
+
+All routes need `audit.view` (Admin, Auditor). Read-only: there is no route that changes the trail.
+
+| Method | Path                                   | Notes                                                                                                                                                                                                               |
+| ------ | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/audit`                               | Newest first. Filters: `userId`, `action` (one code or comma list, e.g. `APPROVE,FINALIZE`), `entityType`, `entityId`, `fromDate`/`toDate` (IST calendar days), `search` (reason, IP, request ID); `pageSize` ≤ 100 |
+| GET    | `/audit/meta`                          | `{ actions[], entityTypes[] (present in the trail), users[] }`                                                                                                                                                      |
+| GET    | `/audit/history/:entityType/:entityId` | Full history of one record, oldest first (≤ 1000 entries)                                                                                                                                                           |
+| GET    | `/audit/:id`                           | One record with previous/new values, IP, user agent and request ID                                                                                                                                                  |
+
 ### Planned modules (spec §61)
 
 `/api/auth`, `/api/users`, `/api/companies`, `/api/drivers`, `/api/vehicles`,

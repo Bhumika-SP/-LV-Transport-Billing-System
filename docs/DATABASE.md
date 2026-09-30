@@ -32,6 +32,7 @@ MySQL 8 (`utf8mb4` / `utf8mb4_unicode_ci`) managed through Prisma 6 migrations.
 | `20260930202011_driver_settlements`      | 9     | `driver_settlements` (UNIQUE driver+month), `driver_settlement_items`, `driver_settlement_revisions`                   |
 | `20260930204444_driver_payments`         | 10    | `driver_payments` (VALID/REVERSED)                                                                                     |
 | `20260930212550_settlement_allocations`  | 11    | `driver_settlement_allocations` (company share of finalized settlements)                                               |
+| `20261001000000_audit_append_only`       | 16    | BEFORE UPDATE / BEFORE DELETE triggers on `audit_logs` that SIGNAL an error (append-only at database level)            |
 | `20260930220110_documents_notifications` | 15    | `documents` (polymorphic attachments, soft delete), `notifications` (per-user, UNIQUE user+dedupe key)                 |
 | `20260930214806_gst`                     | 14    | `tax_rate_configs` (HSN/SAC rates with effective dates), `gst_records` (outward/inward invoices, computed tax heads)   |
 

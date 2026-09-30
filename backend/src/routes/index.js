@@ -7,6 +7,7 @@ import companySettlementsRoutes from '../modules/company-settlements/company-set
 import advancesRoutes from '../modules/advances/advances.routes.js';
 import dashboardRoutes from '../modules/dashboard/dashboard.routes.js';
 import driversRoutes from '../modules/drivers/drivers.routes.js';
+import auditRoutes from '../modules/audit/audit.routes.js';
 import documentsRoutes from '../modules/documents/documents.routes.js';
 import gstRoutes from '../modules/gst/gst.routes.js';
 import notificationsRoutes from '../modules/notifications/notifications.routes.js';
@@ -66,5 +67,6 @@ api.use('/reports', reportsRoutes);
 api.use('/gst', gstRoutes);
 api.use('/documents', documentsRoutes);
 api.use('/notifications', notificationsRoutes);
+api.use('/audit', auditRoutes);
 
 export default api;

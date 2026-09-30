@@ -30,6 +30,7 @@ import TripTable from '../trips/TripTable';
 import { get } from '../../lib/api';
 import { formatDate, formatDateTime } from '../../lib/format';
 import DriverFormModal from './DriverFormModal';
+import EntityHistory from '../audit/EntityHistory';
 import DocumentsPanel from '../documents/DocumentsPanel';
 
 function AssignmentHistory({ driverId }) {
@@ -251,6 +252,15 @@ export default function DriverDetailPage() {
               />
             ),
           },
+          ...(can(PERMISSIONS.AUDIT_VIEW)
+            ? [
+                {
+                  key: 'history',
+                  label: 'History',
+                  content: <EntityHistory entityType="Driver" entityId={id} />,
+                },
+              ]
+            : []),
         ]}
       />
       <DriverFormModal open={editing} onClose={() => setEditing(false)} driver={driver} />

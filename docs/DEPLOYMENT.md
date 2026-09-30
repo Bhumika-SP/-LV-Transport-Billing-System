@@ -88,6 +88,14 @@ public URLs.
 expiring documents and pending company settlements. Alerts are deduplicated in the
 database, so several instances or restarts do not send duplicates.
 
+### Audit triggers (Phase 16)
+
+Migration `20261001000000_audit_append_only` creates two triggers on `audit_logs`. On
+managed MySQL with binary logging enabled, the migrating user needs the `TRIGGER`
+privilege and either `SUPER` or the server parameter `log_bin_trust_function_creators=1`
+(set it in the provider's parameter group before the first deploy). The triggers make
+the table append-only for every account, including the application's.
+
 ## 5. Logging
 
 The API writes structured JSON logs (Pino) to stdout. Render captures them, and a log

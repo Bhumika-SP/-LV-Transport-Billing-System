@@ -18,10 +18,15 @@ export async function resetDatabase() {
   const tables = await prisma.$queryRaw`
     SELECT TABLE_NAME AS name FROM information_schema.TABLES
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME <> '_prisma_migrations'`;
+  // audit_logs is append-only: a trigger rejects DELETE. TRUNCATE does not fire triggers
+  // and is only ever used here, against the *_test database.
+  await prisma.$executeRawUnsafe('TRUNCATE TABLE `audit_logs`');
   // One connection, so FOREIGN_KEY_CHECKS applies to every statement.
   await prisma.$transaction(async (tx) => {
     await tx.$executeRawUnsafe('SET FOREIGN_KEY_CHECKS = 0');
-    for (const { name } of tables) await tx.$executeRawUnsafe(`DELETE FROM \`${name}\``);
+    for (const { name } of tables) {
+      if (name !== 'audit_logs') await tx.$executeRawUnsafe(`DELETE FROM \`${name}\``);
+    }
     await tx.$executeRawUnsafe('SET FOREIGN_KEY_CHECKS = 1');
   });
 }
