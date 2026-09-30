@@ -19,9 +19,10 @@ MySQL 8 (`utf8mb4` / `utf8mb4_unicode_ci`) managed through Prisma 6 migrations.
 
 ## Migration log
 
-| Migration             | Phase | Tables     |
-| --------------------- | ----- | ---------- |
-| `20260930172127_init` | 0     | `settings` |
+| Migration                        | Phase | Tables                                                            |
+| -------------------------------- | ----- | ----------------------------------------------------------------- |
+| `20260930172127_init`            | 0     | `settings`                                                        |
+| `20260930174137_auth_rbac_audit` | 2     | `roles`, `permissions`, `role_permissions`, `users`, `audit_logs` |
 
 ## Entity relationship design
 

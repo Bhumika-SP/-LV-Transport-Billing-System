@@ -47,6 +47,7 @@ docs/       Architecture, database/ERD, API, business rules, deployment
    ```bash
    npm install
    npm run db:migrate
+   npm run db:seed -w backend   # roles/permissions; dev users + demo data if SEED_USER_PASSWORD is set
    ```
 
 4. **Run.**
@@ -57,6 +58,18 @@ docs/       Architecture, database/ERD, API, business rules, deployment
 
    - Web: http://localhost:5173
    - Health: http://localhost:4000/health (returns 503 if the DB is unreachable)
+
+### Development sign-in
+
+With `SEED_USER_PASSWORD` set in `backend/.env`, the seed creates three **development-only** users:
+
+| Email                     | Role              |
+| ------------------------- | ----------------- |
+| `admin@lvtransport.dev`   | Admin / Manager   |
+| `biller@lvtransport.dev`  | Biller / Operator |
+| `auditor@lvtransport.dev` | Auditor / Finance |
+
+All three use the password from `SEED_USER_PASSWORD`. They are never created in production; use `npm run create-admin -w backend` there.
 
 ## Scripts (root)
 
@@ -94,7 +107,7 @@ Full guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 | ----- | --------------------------------------------------------------------- | ----------- |
 | 0     | Project initialization                                                | ✅ Complete |
 | 1     | Foundation (skeleton, health, error handling, logging)                | ✅ Complete |
-| 2     | Authentication & RBAC                                                 |             |
+| 2     | Authentication & RBAC                                                 | ✅ Complete |
 | 3     | Master data (companies, drivers, vehicles, types, rates, assignments) |             |
 | 4     | Company settlement                                                    |             |
 | 5     | Trips                                                                 |             |

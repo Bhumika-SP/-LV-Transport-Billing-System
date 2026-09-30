@@ -24,13 +24,13 @@ third-party-cookie blocking.
 
 ## 2. Backend: Render web service
 
-| Setting           | Value                                    |
-| ----------------- | ---------------------------------------- |
-| Root directory    | repository root                          |
-| Build command     | `npm ci && npm run db:deploy -w backend` |
-| Start command     | `npm start -w backend`                   |
-| Health check path | `/health`                                |
-| Node version      | 22 (`.nvmrc`)                            |
+| Setting           | Value                                                                  |
+| ----------------- | ---------------------------------------------------------------------- |
+| Root directory    | repository root                                                        |
+| Build command     | `npm ci && npm run db:deploy -w backend && npm run db:seed -w backend` |
+| Start command     | `npm start -w backend`                                                 |
+| Health check path | `/health`                                                              |
+| Node version      | 22 (`.nvmrc`)                                                          |
 
 Environment variables (Render dashboard, never in git):
 
@@ -44,7 +44,15 @@ Environment variables (Render dashboard, never in git):
 | `JWT_SECRET`        | 32+ random chars                                           | Added in Phase 2                      |
 | Storage credentials | bucket, key, secret, endpoint                              | Added in Phase 15                     |
 
-Migrations run on every deploy through `prisma migrate deploy`, which is idempotent.
+Migrations run on every deploy through `prisma migrate deploy`, which is idempotent. `db:seed` then
+re-syncs roles and permissions. In production it never creates dev users or demo data.
+
+**First admin (once):** from a Render shell:
+
+```bash
+ADMIN_PASSWORD='<strong password>' npm run create-admin -w backend -- --email owner@lvtransport.in --name "Owner Name"
+```
+
 The API refuses to start if required environment variables are missing or invalid.
 
 ## 3. Frontend: Vercel

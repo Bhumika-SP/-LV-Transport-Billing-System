@@ -1,8 +1,15 @@
 import { X } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
-import { NAV_SECTIONS } from '../../config/navigation';
+import { useAuth } from '../../auth/auth-context';
+import { NAV_SECTIONS, canAccess } from '../../config/navigation';
 
 export default function Sidebar({ open, onClose }) {
+  const auth = useAuth();
+  const sections = NAV_SECTIONS.map((s) => ({
+    ...s,
+    items: s.items.filter((item) => canAccess(item, auth)),
+  })).filter((s) => s.items.length > 0);
+
   return (
     <>
       {/* Mobile backdrop */}
@@ -41,7 +48,7 @@ export default function Sidebar({ open, onClose }) {
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-4">
-          {NAV_SECTIONS.map((section, idx) => (
+          {sections.map((section, idx) => (
             <div key={section.title ?? idx} className="mb-4">
               {section.title && (
                 <div className="mb-1 px-3 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
