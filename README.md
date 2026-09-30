@@ -116,7 +116,7 @@ Full guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 | 8     | Expenses & advances                                                   | ✅ Complete |
 | 9     | Driver settlement engine                                              | ✅ Complete |
 | 10    | Driver payments                                                       | ✅ Complete |
-| 11    | LV profit                                                             |             |
+| 11    | LV profit                                                             | ✅ Complete |
 | 12    | Dashboards                                                            |             |
 | 13    | Reports                                                               |             |
 | 14    | GST / finance                                                         |             |

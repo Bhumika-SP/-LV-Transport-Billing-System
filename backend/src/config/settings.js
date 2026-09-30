@@ -4,6 +4,14 @@
  * Add new settings here as later phases need them.
  */
 export const SETTING_DEFINITIONS = {
+  'profit.allocationMethod': {
+    type: 'string',
+    default: 'TRIP_EARNINGS',
+    options: ['TRIP_EARNINGS', 'TRIP_COUNT'],
+    group: 'Profit',
+    description:
+      'How a finalized driver settlement is attributed to companies for company-wise profit (applies to settlements finalized after the change).',
+  },
   'assignments.allowConcurrentCompaniesPerVehicle': {
     type: 'boolean',
     default: false,

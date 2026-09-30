@@ -10,6 +10,7 @@ import { driverExpensesRouter, lvExpensesRouter } from '../modules/expenses/expe
 import { adjustmentsRouter, earningsRouter } from '../modules/earnings/earnings.routes.js';
 import { importsRouter, templatesRouter } from '../modules/imports/imports.routes.js';
 import paymentsRoutes from '../modules/payments/payments.routes.js';
+import profitRoutes from '../modules/profit/profit.routes.js';
 import ratesRoutes from '../modules/rates/rates.routes.js';
 import rolesRoutes from '../modules/roles/roles.routes.js';
 import settingsRoutes from '../modules/settings/settings.routes.js';
@@ -54,5 +55,6 @@ api.use('/driver-expenses', driverExpensesRouter);
 api.use('/advances', advancesRoutes);
 api.use('/settlements', settlementsRoutes);
 api.use('/payments', paymentsRoutes);
+api.use('/profit', profitRoutes);
 
 export default api;

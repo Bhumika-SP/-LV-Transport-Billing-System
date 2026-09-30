@@ -72,6 +72,8 @@ export const PERMISSIONS = Object.freeze({
   PAYMENT_VIEW: 'payment.view',
   PAYMENT_RECORD: 'payment.record',
   PAYMENT_REVERSE: 'payment.reverse',
+  // LV profit (Phase 11)
+  PROFIT_VIEW: 'profit.view',
 });
 
 const { ADMIN, BILLER, AUDITOR } = ROLES;
@@ -216,4 +218,5 @@ export const PERMISSION_DEFINITIONS = [
     [ADMIN, BILLER],
   ],
   [P.PAYMENT_REVERSE, 'Driver payments', 'Reverse a recorded payment (reason required)', [ADMIN]],
+  [P.PROFIT_VIEW, 'Profit', 'View LV profit (company-wise, monthly, overall)', [ADMIN, AUDITOR]],
 ].map(([code, module, description, roles]) => ({ code, module, description, roles }));

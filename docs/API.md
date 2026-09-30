@@ -277,6 +277,17 @@ View `payment.view` (all roles). Record `payment.record` (Admin, Biller). Revers
 
 `GET /settlements/:id` includes `payments[]` and `outstandingAmount`.
 
+### LV profit — `/api/profit` (Phase 11)
+
+`profit.view` (Admin, Auditor). Only RECEIVED company settlements (actual amount) and FINALIZED driver
+settlements count. Pending and unfinalized amounts are returned separately for context.
+
+| Method | Path                      | Notes                                      |
+| ------ | ------------------------- | ------------------------------------------ |
+| GET    | `/profit/monthly?month=   | fromMonth=&toMonth=&companyId=`            | `months[]: { settlementMonth, receivedAmount, pendingExpected, finalizedSettlements, lvProfit, unfinalizedSettlements }` plus `totals` |
+| GET    | `/profit/companies?month= | fromMonth=&toMonth=`                       | `companies[]` (the `company: null` row = settlements with no trips, not attributable) plus `totals`                                    |
+| GET    | `/profit/overall`         | All-time `totals` plus the monthly `trend` |
+
 ### Planned modules (spec §61)
 
 `/api/auth`, `/api/users`, `/api/companies`, `/api/drivers`, `/api/vehicles`,

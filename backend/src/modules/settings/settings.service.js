@@ -25,6 +25,7 @@ export async function listSettings() {
     key,
     group: def.group,
     type: def.type,
+    options: def.options,
     description: def.description,
     defaultValue: def.default,
     value: byKey[key] ? byKey[key].value : def.default,
@@ -38,6 +39,13 @@ export async function updateSetting(key, value, actor, req) {
     throw AppError.badRequest(`Setting ${key} must be a ${def.type}`, 'VALIDATION_ERROR', [
       { path: 'value', message: `Must be a ${def.type}` },
     ]);
+  }
+  if (def.options && !def.options.includes(value)) {
+    throw AppError.badRequest(
+      `Setting ${key} must be one of ${def.options.join(', ')}`,
+      'VALIDATION_ERROR',
+      [{ path: 'value', message: `Allowed: ${def.options.join(', ')}` }],
+    );
   }
   return prisma.$transaction(async (tx) => {
     const previous = await getSetting(key, tx);

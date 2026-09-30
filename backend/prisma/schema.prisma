@@ -200,11 +200,12 @@ model Company {
   createdAt     DateTime     @default(now()) @map("created_at")
   updatedAt     DateTime     @updatedAt @map("updated_at")
 
-  createdBy          User?               @relation("CompanyCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdBy          User?                        @relation("CompanyCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   vehicleAssignments VehicleAssignment[]
   settlements        CompanySettlement[]
   trips              Trip[]
   importTemplates    ImportTemplate[]
+  allocations        DriverSettlementAllocation[]
   tripImports        TripImport[]
 
   @@index([status])
@@ -895,15 +896,16 @@ model DriverSettlement {
   createdAt           DateTime                 @default(now()) @map("created_at")
   updatedAt           DateTime                 @updatedAt @map("updated_at")
 
-  driver       Driver                     @relation(fields: [driverId], references: [id], onDelete: Restrict)
-  createdBy    User?                      @relation("SettlementCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  calculatedBy User?                      @relation("SettlementCalculatedBy", fields: [calculatedById], references: [id], onDelete: SetNull)
-  submittedBy  User?                      @relation("SettlementSubmittedBy", fields: [submittedById], references: [id], onDelete: SetNull)
-  approvedBy   User?                      @relation("SettlementApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
-  finalizedBy  User?                      @relation("SettlementFinalizedBy", fields: [finalizedById], references: [id], onDelete: SetNull)
+  driver       Driver                       @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  createdBy    User?                        @relation("SettlementCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  calculatedBy User?                        @relation("SettlementCalculatedBy", fields: [calculatedById], references: [id], onDelete: SetNull)
+  submittedBy  User?                        @relation("SettlementSubmittedBy", fields: [submittedById], references: [id], onDelete: SetNull)
+  approvedBy   User?                        @relation("SettlementApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
+  finalizedBy  User?                        @relation("SettlementFinalizedBy", fields: [finalizedById], references: [id], onDelete: SetNull)
   items        DriverSettlementItem[]
   revisions    DriverSettlementRevision[]
   payments     DriverPayment[]
+  allocations  DriverSettlementAllocation[]
 
   @@unique([driverId, settlementMonth])
   @@index([settlementMonth, status])
@@ -987,4 +989,30 @@ model DriverPayment {
   @@index([driverId, paymentDate])
   @@index([paymentDate])
   @@map("driver_payments")
+}
+
+// ============================================================
+// Phase 11 — LV profit
+// ============================================================
+
+/// Share of a FINALIZED driver settlement attributed to a company (assumption A7:
+/// proportional to the driver's trip earnings per company that month). companyId NULL
+/// holds the part that cannot be attributed (driver had no trips that month).
+/// Rows are replaced on every finalization and removed on reopen.
+model DriverSettlementAllocation {
+  id              Int      @id @default(autoincrement())
+  settlementId    Int      @map("settlement_id")
+  companyId       Int?     @map("company_id")
+  /// Denormalized for fast profit queries.
+  settlementMonth String   @map("settlement_month") @db.Char(7)
+  tripEarnings    Decimal  @map("trip_earnings") @db.Decimal(15, 2)
+  amount          Decimal  @db.Decimal(15, 2)
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  settlement DriverSettlement @relation(fields: [settlementId], references: [id], onDelete: Cascade)
+  company    Company?         @relation(fields: [companyId], references: [id], onDelete: Restrict)
+
+  @@unique([settlementId, companyId])
+  @@index([settlementMonth, companyId])
+  @@map("driver_settlement_allocations")
 }

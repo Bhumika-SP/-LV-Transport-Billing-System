@@ -15,6 +15,11 @@ import DriversPage from './features/drivers/DriversPage';
 import ImportBatchPage from './features/imports/ImportBatchPage';
 import ImportsPage from './features/imports/ImportsPage';
 import PaymentsPage from './features/payments/PaymentsPage';
+import {
+  CompanyProfitPage,
+  MonthlyProfitPage,
+  OverallProfitPage,
+} from './features/profit/ProfitPages';
 import RolesPage from './features/roles/RolesPage';
 import SettingsPage from './features/settings/SettingsPage';
 import SettlementDetailPage from './features/settlements/SettlementDetailPage';
@@ -50,6 +55,9 @@ const PAGES = {
   '/advances': AdvancesPage,
   '/settlements': SettlementsPage,
   '/payments': PaymentsPage,
+  '/profit/company': CompanyProfitPage,
+  '/profit/monthly': MonthlyProfitPage,
+  '/profit/overall': OverallProfitPage,
 };
 
 /** Routes that are not nav entries (detail pages). */

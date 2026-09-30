@@ -6,6 +6,7 @@ import { findPage } from '../../utils/pagination.js';
 import { findOr404, lockRow, rethrowUnique } from '../../utils/records.js';
 import { serialize } from '../../utils/serialize.js';
 import { AUDIT_ACTIONS, recordAudit } from '../audit/audit.service.js';
+import { allocateSettlement, clearAllocation } from '../profit/allocation.service.js';
 import { runSettlementEngine } from './settlement-engine.js';
 import { COMPONENTS } from './settlement-formula.js';
 
@@ -325,6 +326,8 @@ export function finalizeSettlement(id, actor, req) {
         'PAID_EXCEEDS_FINAL',
       );
     }
+    // Company-wise attribution for LV profit (A7).
+    await allocateSettlement(tx, before);
     return transition(tx, {
       before,
       data: {
@@ -355,11 +358,18 @@ export function reopenSettlement(id, { reason }, actor, req) {
         settlementId: id,
         version: before.version,
         // Same wire format as the API (money as 2dp strings, dates as YYYY-MM-DD).
-        snapshot: serialize({ settlement: before, items }),
+        snapshot: serialize({
+          settlement: before,
+          items,
+          allocations: await tx.driverSettlementAllocation.findMany({
+            where: { settlementId: id },
+          }),
+        }),
         reason,
         reopenedById: actor.id,
       },
     });
+    await clearAllocation(tx, id);
     return transition(tx, {
       before,
       data: {

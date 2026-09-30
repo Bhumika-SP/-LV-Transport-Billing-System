@@ -28,6 +28,7 @@ import {
   submitSettlement,
 } from '../src/modules/settlements/settlements.service.js';
 import { recordPayment } from '../src/modules/payments/payments.service.js';
+import { allocateSettlement } from '../src/modules/profit/allocation.service.js';
 import { createTrip } from '../src/modules/trips/trips.service.js';
 import { createVehicleType } from '../src/modules/vehicle-types/vehicle-types.service.js';
 import { createVehicle } from '../src/modules/vehicles/vehicles.service.js';
@@ -426,6 +427,16 @@ async function seedPayments(actor) {
   console.log(`  ${count} driver payments`);
 }
 
+/** Company attribution for finalized settlements that predate Phase 11 (idempotent). */
+async function backfillAllocations() {
+  const missing = await prisma.driverSettlement.findMany({
+    where: { status: 'FINALIZED', allocations: { none: {} } },
+  });
+  for (const s of missing) await prisma.$transaction((tx) => allocateSettlement(tx, s));
+  if (missing.length)
+    console.log(`  allocated ${missing.length} finalized settlement(s) to companies`);
+}
+
 export async function seedDevelopmentData(actor) {
   console.log('Seeding development data…');
   await seedMasterData(actor);
@@ -435,4 +446,5 @@ export async function seedDevelopmentData(actor) {
   await seedExpensesAndAdvances(actor);
   await seedSettlements(actor);
   await seedPayments(actor);
+  await backfillAllocations();
 }

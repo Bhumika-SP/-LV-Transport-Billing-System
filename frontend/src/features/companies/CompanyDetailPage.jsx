@@ -17,6 +17,7 @@ import TripTable from '../trips/TripTable';
 import { get } from '../../lib/api';
 import { formatDate, formatDateTime } from '../../lib/format';
 import CompanySettlementTable from '../company-settlements/CompanySettlementTable';
+import { MonthlyProfitView } from '../profit/ProfitPages';
 import CompanyFormModal from './CompanyFormModal';
 
 const period = (r) =>
@@ -175,11 +176,9 @@ export default function CompanyDetailPage() {
           { key: 'trips', label: 'Trips', content: <TripTable fixed={{ companyId: id }} /> },
           { key: 'drivers', label: 'Drivers', content: <CompanyDrivers companyId={id} /> },
           { key: 'vehicles', label: 'Vehicles', content: <CompanyVehicles companyId={id} /> },
-          {
-            key: 'profit',
-            label: 'Profit',
-            content: <PhasePlaceholder what="Company-wise LV profit" phase={11} />,
-          },
+          ...(can(PERMISSIONS.PROFIT_VIEW)
+            ? [{ key: 'profit', label: 'Profit', content: <MonthlyProfitView companyId={id} /> }]
+            : []),
         ]}
       />
       <CompanyFormModal open={editing} onClose={() => setEditing(false)} company={company} />

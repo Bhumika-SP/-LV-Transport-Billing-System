@@ -71,6 +71,21 @@ export default function SettingsPage() {
                         {s.updatedAt && ` · Changed ${formatDateTime(s.updatedAt)}`}
                       </p>
                     </div>
+                    {s.type === 'string' && s.options && (
+                      <select
+                        aria-label={s.description}
+                        className="rounded-md border border-slate-300 px-2 py-1 text-sm"
+                        value={s.value}
+                        disabled={mutation.isPending}
+                        onChange={(e) => mutation.mutate({ key: s.key, value: e.target.value })}
+                      >
+                        {s.options.map((o) => (
+                          <option key={o} value={o}>
+                            {o.replace(/_/g, ' ').toLowerCase()}
+                          </option>
+                        ))}
+                      </select>
+                    )}
                     {s.type === 'boolean' && (
                       <Toggle
                         label={s.description}

@@ -17,10 +17,13 @@ Company → Monthly company settlement → Trips (KM × vehicle-type rate) → D
 LV PROFIT = ACTUAL COMPANY AMOUNT RECEIVED − TOTAL FINALIZED DRIVER SETTLEMENTS
 ```
 
-- Uses only company settlements with status **RECEIVED** and driver settlements with status **FINALIZED**.
-- Fuel, toll, maintenance and EMI are **never** subtracted again. They are already inside the driver settlement.
-- V1 has no separate "net profit after LV expenses" figure.
-- Views: company-wise, monthly, overall.
+- Company side: company settlements with status **RECEIVED**, using the **actual received amount**. PENDING never counts; it is shown separately as "pending (expected)".
+- Driver side: driver settlements with status **FINALIZED** only. Draft, calculated, under-review and approved settlements are excluded and reported as "not yet finalized".
+- Fuel, toll, maintenance and EMI are **never** subtracted again: they are already inside the finalized settlements (tested).
+- Months are matched by **settlement month** (A6).
+- **Company-wise (A7, confirmed):** at finalization each settlement is attributed to the companies the driver served that month, in proportion to that driver's trip earnings per company. It is exact to the paisa (largest remainder) and stored in `driver_settlement_allocations`. The method is a setting (`profit.allocationMethod`: trip earnings or trip count). A settlement with no trips is kept as "not attributable" so totals still reconcile. Reopen removes the allocation; re-finalizing recreates it.
+- Views: company-wise, monthly (with company filter), overall (with trend). Admin and Auditor only.
+- The formula lives only in `profit/profit-formula.js`.
 
 ## R2. Trip earnings (Phase 5)
 

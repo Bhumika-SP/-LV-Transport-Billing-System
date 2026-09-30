@@ -19,18 +19,19 @@ MySQL 8 (`utf8mb4` / `utf8mb4_unicode_ci`) managed through Prisma 6 migrations.
 
 ## Migration log
 
-| Migration                            | Phase | Tables                                                                                                                 |
-| ------------------------------------ | ----- | ---------------------------------------------------------------------------------------------------------------------- |
-| `20260930172127_init`                | 0     | `settings`                                                                                                             |
-| `20260930174137_auth_rbac_audit`     | 2     | `roles`, `permissions`, `role_permissions`, `users`, `audit_logs`                                                      |
-| `20260930175805_master_data`         | 3     | `companies`, `drivers`, `vehicle_types`, `vehicle_type_rates`, `vehicles`, `vehicle_assignments`, `driver_assignments` |
-| `20260930182820_company_settlements` | 4     | `company_settlements` (+ `PaymentMethod` enum)                                                                         |
-| `20260930184249_trips`               | 5     | `trips` (+ `KmSource`, `TripSource`, `TripStatus` enums). UNIQUE(`company_id`, `external_trip_id`)                     |
-| `20260930191841_trip_imports`        | 6     | `import_templates`, `import_template_mappings`, `trip_imports`, `import_rows`; FK `trips.import_id`                    |
-| `20260930194859_driver_earnings`     | 7     | `driver_earnings` (ALLOWANCE/OTHER_EARNING), `driver_adjustments` (POSITIVE_ADJUSTMENT/OTHER_DEDUCTION)                |
-| `20260930200411_expenses_advances`   | 8     | `driver_expenses` (paidBy LV/DRIVER), `driver_advances`, `advance_recoveries`                                          |
-| `20260930202011_driver_settlements`  | 9     | `driver_settlements` (UNIQUE driver+month), `driver_settlement_items`, `driver_settlement_revisions`                   |
-| `20260930204444_driver_payments`     | 10    | `driver_payments` (VALID/REVERSED)                                                                                     |
+| Migration                               | Phase | Tables                                                                                                                 |
+| --------------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------- |
+| `20260930172127_init`                   | 0     | `settings`                                                                                                             |
+| `20260930174137_auth_rbac_audit`        | 2     | `roles`, `permissions`, `role_permissions`, `users`, `audit_logs`                                                      |
+| `20260930175805_master_data`            | 3     | `companies`, `drivers`, `vehicle_types`, `vehicle_type_rates`, `vehicles`, `vehicle_assignments`, `driver_assignments` |
+| `20260930182820_company_settlements`    | 4     | `company_settlements` (+ `PaymentMethod` enum)                                                                         |
+| `20260930184249_trips`                  | 5     | `trips` (+ `KmSource`, `TripSource`, `TripStatus` enums). UNIQUE(`company_id`, `external_trip_id`)                     |
+| `20260930191841_trip_imports`           | 6     | `import_templates`, `import_template_mappings`, `trip_imports`, `import_rows`; FK `trips.import_id`                    |
+| `20260930194859_driver_earnings`        | 7     | `driver_earnings` (ALLOWANCE/OTHER_EARNING), `driver_adjustments` (POSITIVE_ADJUSTMENT/OTHER_DEDUCTION)                |
+| `20260930200411_expenses_advances`      | 8     | `driver_expenses` (paidBy LV/DRIVER), `driver_advances`, `advance_recoveries`                                          |
+| `20260930202011_driver_settlements`     | 9     | `driver_settlements` (UNIQUE driver+month), `driver_settlement_items`, `driver_settlement_revisions`                   |
+| `20260930204444_driver_payments`        | 10    | `driver_payments` (VALID/REVERSED)                                                                                     |
+| `20260930212550_settlement_allocations` | 11    | `driver_settlement_allocations` (company share of finalized settlements)                                               |
 
 ## Entity relationship design
 
