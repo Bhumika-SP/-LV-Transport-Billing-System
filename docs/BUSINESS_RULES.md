@@ -97,17 +97,25 @@ GROSS DRIVER EARNINGS = TRIP EARNINGS + ALLOWANCES + OTHER EARNINGS + POSITIVE A
 
 ## R6. Expense direction (Phase 8)
 
-| Paid by | Categories                     | Effect on driver settlement |
-| ------- | ------------------------------ | --------------------------- |
-| LV      | Fuel, Toll, Maintenance, EMI   | **Deducted**                |
-| Driver  | Fuel, Toll, Maintenance, Other | **Added** (reimbursement)   |
+| Paid by | Categories                     | Effect on driver settlement | Endpoint               |
+| ------- | ------------------------------ | --------------------------- | ---------------------- |
+| LV      | Fuel, Toll, Maintenance, EMI   | **Deducted**                | `/api/lv-expenses`     |
+| Driver  | Fuel, Toll, Maintenance, Other | **Added** (reimbursement)   | `/api/driver-expenses` |
 
-Driver-paid expenses are recorded by the biller and need no manager approval.
+- Direction is decided **only** by who paid (`paidBy`). A client cannot switch it: each endpoint forces its own direction.
+- Every expense records driver, vehicle, category, amount, date, paid by, description, receipt reference, settlement month, status and creator.
+- Driver-paid expenses are recorded by the biller with **no manager approval** (spec §22).
+- LV-paid expenses are **never** subtracted again in LV profit. They only affect the driver settlement.
 
 ## R7. Advances (Phase 8)
 
-- An advance is money already paid out. It is recovered through later settlements, and partial recovery is allowed.
-- `outstanding = amount − Σ recoveries`. A recovery above the outstanding balance is rejected.
+- An advance is money already paid out (amount, date, reason, payment method, reference). It is recovered through later settlements.
+- **Partial recovery** is allowed. Each recovery belongs to a settlement month.
+- `outstanding = amount − Σ ACTIVE recoveries` and `recovered + outstanding = amount` always hold.
+- **A recovery above the outstanding balance is rejected**, also under concurrent requests (row lock).
+- When fully recovered the advance becomes RECOVERED. Voiding a recovery restores the balance and reopens it.
+- An advance can only be voided while nothing has been recovered.
+- The recovery amount per month is entered by staff (A8). There is no automatic schedule.
 
 ## R8. Other deductions (Phase 8)
 

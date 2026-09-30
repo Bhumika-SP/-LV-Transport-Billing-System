@@ -24,6 +24,9 @@ const STATUS_TONES = {
   WARNING: 'amber',
   ERROR: 'red',
   DUPLICATE: 'gray',
+  OPEN: 'amber',
+  RECOVERED: 'green',
+  VOID: 'red',
 };
 
 export default function Badge({ tone = 'gray', children }) {

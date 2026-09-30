@@ -15,6 +15,9 @@ import { AUDIT_ACTIONS, recordAudit } from '../audit/audit.service.js';
  *   validate(tx, data)       extra rules before insert (e.g. expense category by payer)
  *   guard(tx, driverId, m)   runs before any write for that driver + settlement month
  *                            (used to lock months whose settlement is under review/finalized)
+ *
+ * `scope` (e.g. { paidBy: 'LV' }) restricts every read and write of this service
+ * instance, so two endpoints can share one table without seeing each other's rows.
  */
 export function createDriverItemService({
   model,
@@ -25,6 +28,7 @@ export function createDriverItemService({
   include = {},
   validate,
   guard,
+  scope = {},
 }) {
   const notFound = { code: notFoundCode, label: entityType };
   const baseInclude = {
@@ -41,6 +45,7 @@ export function createDriverItemService({
       ...(type && { [typeField]: type }),
       ...(status && { status }),
       ...rest,
+      ...scope,
     };
     if (fromDate || toDate) {
       w[dateField] = {
@@ -88,6 +93,7 @@ export function createDriverItemService({
           ]);
         }
         const settlementMonth = data.settlementMonth ?? monthOf(data[dateField]);
+        data = { ...data, ...scope };
         await validate?.(tx, data);
         await guard?.(tx, data.driverId, settlementMonth);
         const row = await tx[model].create({
@@ -114,6 +120,9 @@ export function createDriverItemService({
     async void(id, { reason }, actor, req) {
       return prisma.$transaction(async (tx) => {
         const before = await findOr404(tx[model], id, notFound);
+        if (Object.entries(scope).some(([k, v]) => before[k] !== v)) {
+          throw AppError.notFound(`${entityType} not found`, notFoundCode);
+        }
         if (before.status !== 'ACTIVE') {
           throw AppError.conflict('This item is already void', 'ALREADY_VOID');
         }

@@ -212,6 +212,33 @@ Every line-item resource (later also `/api/driver-expenses`) has the same shape:
 - `POST /adjustments`: `{ driverId, type: POSITIVE_ADJUSTMENT|OTHER_DEDUCTION, amount, adjustmentDate, settlementMonth?, reason }` (reason mandatory)
 - `GET /earnings/gross?month=|fromMonth=&toMonth=|driverId=` → per driver × month: `tripCount, tripEarnings, allowances, otherEarnings, positiveAdjustments, grossEarnings`
 
+### Expenses — `/api/lv-expenses`, `/api/driver-expenses` (Phase 8)
+
+One table (`driver_expenses`, `paidBy` LV|DRIVER) served by two scoped endpoints with the standard
+line-item routes (list, totals by category, create, void). Each endpoint only sees and changes its own direction.
+
+| Endpoint           | Direction                                 | Categories                     | Write permission        |
+| ------------------ | ----------------------------------------- | ------------------------------ | ----------------------- |
+| `/lv-expenses`     | LV paid, **deducted** from the settlement | FUEL, TOLL, MAINTENANCE, EMI   | `lv_expense.manage`     |
+| `/driver-expenses` | Driver paid, **reimbursed** (added)       | FUEL, TOLL, MAINTENANCE, OTHER | `driver_expense.manage` |
+
+Body: `{ driverId, vehicleId, category, amount, expenseDate, settlementMonth?, description, receiptReference? }`.
+Extra list/totals filter: `vehicleId`.
+
+### Advances — `/api/advances` (Phase 8)
+
+View: `driver_finance.view`. Write: `advance.manage` (Admin, Biller).
+
+| Method | Path                                    | Notes                                                                                                                             |
+| ------ | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/advances`                             | Filters `driverId`, `status` (OPEN/RECOVERED/VOID). Includes recoveries                                                           |
+| GET    | `/advances/summary?driverId=`           | `{ count, advanced, recovered, outstanding }`                                                                                     |
+| GET    | `/advances/recoveries?driverId=&month=` | ACTIVE recoveries (settlement input)                                                                                              |
+| POST   | `/advances`                             | `{ driverId, amount, advanceDate, reason, paymentMethod, referenceNumber? }` → OPEN, outstanding = amount                         |
+| POST   | `/advances/:id/recoveries`              | `{ amount, settlementMonth, recoveryDate?, notes? }`. Row-locked. 409 `RECOVERY_EXCEEDS_OUTSTANDING`. Fully recovered → RECOVERED |
+| POST   | `/advances/recoveries/:id/void`         | `{ reason }`. Restores the balance                                                                                                |
+| POST   | `/advances/:id/void`                    | `{ reason }`. Only if there are no active recoveries                                                                              |
+
 ### Planned modules (spec §61)
 
 `/api/auth`, `/api/users`, `/api/companies`, `/api/drivers`, `/api/vehicles`,

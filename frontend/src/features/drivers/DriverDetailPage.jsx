@@ -15,7 +15,15 @@ import Tabs from '../../components/ui/Tabs';
 import { PERMISSIONS } from '../../config/permissions';
 import DriverItemsTable from '../driver-finance/DriverItemsTable';
 import GrossEarningsTable from '../driver-finance/GrossEarningsTable';
-import { EARNINGS, POSITIVE_ADJUSTMENTS } from '../driver-finance/itemConfigs';
+import AdvancesTable from '../driver-finance/AdvancesTable';
+import {
+  DRIVER_EXPENSES,
+  EARNINGS,
+  LV_EXPENSES,
+  OTHER_DEDUCTIONS,
+  POSITIVE_ADJUSTMENTS,
+  vehicleColumn,
+} from '../driver-finance/itemConfigs';
 import TripTable from '../trips/TripTable';
 import { get } from '../../lib/api';
 import { formatDate, formatDateTime } from '../../lib/format';
@@ -185,17 +193,37 @@ export default function DriverDetailPage() {
           {
             key: 'expenses',
             label: 'Expenses',
-            content: <PhasePlaceholder what="Expenses" phase={8} />,
+            content: (
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-slate-700">
+                  Driver-paid (reimbursed, added to settlement)
+                </h3>
+                <DriverItemsTable
+                  config={DRIVER_EXPENSES}
+                  fixed={{ driverId: id }}
+                  extraColumns={[vehicleColumn]}
+                />
+                <h3 className="text-sm font-semibold text-slate-700">
+                  LV-paid (deducted from settlement)
+                </h3>
+                <DriverItemsTable
+                  config={LV_EXPENSES}
+                  fixed={{ driverId: id }}
+                  extraColumns={[vehicleColumn]}
+                />
+              </div>
+            ),
           },
-          {
-            key: 'advances',
-            label: 'Advances',
-            content: <PhasePlaceholder what="Advances" phase={8} />,
-          },
+          { key: 'advances', label: 'Advances', content: <AdvancesTable driverId={id} /> },
           {
             key: 'deductions',
             label: 'Deductions',
-            content: <PhasePlaceholder what="Deductions" phase={8} />,
+            content: (
+              <DriverItemsTable
+                config={OTHER_DEDUCTIONS}
+                fixed={{ driverId: id, type: 'OTHER_DEDUCTION' }}
+              />
+            ),
           },
           {
             key: 'settlements',

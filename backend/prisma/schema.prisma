@@ -116,6 +116,12 @@ model User {
   earningsVoided             DriverEarning[]     @relation("EarningVoidedBy")
   adjustmentsCreated         DriverAdjustment[]  @relation("AdjustmentCreatedBy")
   adjustmentsVoided          DriverAdjustment[]  @relation("AdjustmentVoidedBy")
+  expensesCreated            DriverExpense[]     @relation("ExpenseCreatedBy")
+  expensesVoided             DriverExpense[]     @relation("ExpenseVoidedBy")
+  advancesCreated            DriverAdvance[]     @relation("AdvanceCreatedBy")
+  advancesVoided             DriverAdvance[]     @relation("AdvanceVoidedBy")
+  recoveriesCreated          AdvanceRecovery[]   @relation("RecoveryCreatedBy")
+  recoveriesVoided           AdvanceRecovery[]   @relation("RecoveryVoidedBy")
 
   @@index([roleId])
   @@index([status])
@@ -223,6 +229,9 @@ model Driver {
   trips       Trip[]
   earnings    DriverEarning[]
   adjustments DriverAdjustment[]
+  expenses    DriverExpense[]
+  advances    DriverAdvance[]
+  recoveries  AdvanceRecovery[]
 
   @@index([status])
   @@index([fullName])
@@ -301,6 +310,7 @@ model Vehicle {
   createdBy          User?               @relation("VehicleCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   companyAssignments VehicleAssignment[]
   driverAssignments  DriverAssignment[]
+  expenses           DriverExpense[]
 
   trips Trip[]
 
@@ -677,4 +687,119 @@ model DriverAdjustment {
   @@index([settlementMonth, status])
   @@index([adjustmentDate])
   @@map("driver_adjustments")
+}
+
+// ============================================================
+// Phase 8 — Expenses and advances
+// ============================================================
+
+/// Who paid (spec §24): LV-paid is DEDUCTED from the driver settlement,
+/// driver-paid is REIMBURSED (added).
+enum ExpensePaidBy {
+  LV
+  DRIVER
+}
+
+/// LV-paid: FUEL, TOLL, MAINTENANCE, EMI. Driver-paid: FUEL, TOLL, MAINTENANCE, OTHER.
+enum ExpenseCategory {
+  FUEL
+  TOLL
+  MAINTENANCE
+  EMI
+  OTHER
+}
+
+enum AdvanceStatus {
+  OPEN
+  RECOVERED
+  VOID
+}
+
+model DriverExpense {
+  id               Int             @id @default(autoincrement())
+  driverId         Int             @map("driver_id")
+  vehicleId        Int             @map("vehicle_id")
+  paidBy           ExpensePaidBy   @map("paid_by")
+  category         ExpenseCategory
+  amount           Decimal         @db.Decimal(15, 2)
+  expenseDate      DateTime        @map("expense_date") @db.Date
+  settlementMonth  String          @map("settlement_month") @db.Char(7)
+  description      String          @db.VarChar(500)
+  /// Bill / receipt number until document upload arrives (Phase 15).
+  receiptReference String?         @map("receipt_reference") @db.VarChar(100)
+  status           ItemStatus      @default(ACTIVE)
+  voidReason       String?         @map("void_reason") @db.VarChar(500)
+  voidedAt         DateTime?       @map("voided_at")
+  voidedById       Int?            @map("voided_by_id")
+  createdById      Int?            @map("created_by_id")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+
+  driver    Driver  @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  createdBy User?   @relation("ExpenseCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  voidedBy  User?   @relation("ExpenseVoidedBy", fields: [voidedById], references: [id], onDelete: SetNull)
+
+  @@index([driverId, settlementMonth])
+  @@index([vehicleId, expenseDate])
+  @@index([expenseDate])
+  @@index([settlementMonth, paidBy, category, status])
+  @@map("driver_expenses")
+}
+
+/// Money already paid to a driver, recovered through later settlements (spec §25).
+/// recoveredAmount + outstandingAmount = amount, maintained under a row lock.
+model DriverAdvance {
+  id                Int           @id @default(autoincrement())
+  driverId          Int           @map("driver_id")
+  amount            Decimal       @db.Decimal(15, 2)
+  advanceDate       DateTime      @map("advance_date") @db.Date
+  reason            String        @db.VarChar(500)
+  paymentMethod     PaymentMethod @map("payment_method")
+  referenceNumber   String?       @map("reference_number") @db.VarChar(100)
+  recoveredAmount   Decimal       @default(0) @map("recovered_amount") @db.Decimal(15, 2)
+  outstandingAmount Decimal       @map("outstanding_amount") @db.Decimal(15, 2)
+  status            AdvanceStatus @default(OPEN)
+  voidReason        String?       @map("void_reason") @db.VarChar(500)
+  voidedAt          DateTime?     @map("voided_at")
+  voidedById        Int?          @map("voided_by_id")
+  createdById       Int?          @map("created_by_id")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+
+  driver     Driver            @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  createdBy  User?             @relation("AdvanceCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  voidedBy   User?             @relation("AdvanceVoidedBy", fields: [voidedById], references: [id], onDelete: SetNull)
+  recoveries AdvanceRecovery[]
+
+  @@index([driverId, status])
+  @@index([advanceDate])
+  @@map("driver_advances")
+}
+
+/// One recovery of an advance in a settlement month (partial recovery supported).
+model AdvanceRecovery {
+  id              Int        @id @default(autoincrement())
+  advanceId       Int        @map("advance_id")
+  driverId        Int        @map("driver_id")
+  settlementMonth String     @map("settlement_month") @db.Char(7)
+  amount          Decimal    @db.Decimal(15, 2)
+  recoveryDate    DateTime   @map("recovery_date") @db.Date
+  notes           String?    @db.VarChar(500)
+  status          ItemStatus @default(ACTIVE)
+  voidReason      String?    @map("void_reason") @db.VarChar(500)
+  voidedAt        DateTime?  @map("voided_at")
+  voidedById      Int?       @map("voided_by_id")
+  createdById     Int?       @map("created_by_id")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+
+  advance   DriverAdvance @relation(fields: [advanceId], references: [id], onDelete: Restrict)
+  driver    Driver        @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  createdBy User?         @relation("RecoveryCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  voidedBy  User?         @relation("RecoveryVoidedBy", fields: [voidedById], references: [id], onDelete: SetNull)
+
+  @@index([advanceId])
+  @@index([driverId, settlementMonth])
+  @@map("advance_recoveries")
 }

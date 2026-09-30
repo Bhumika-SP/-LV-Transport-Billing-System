@@ -55,6 +55,7 @@ export default function DriverItemsTable({
     onError: (err) => toast.error(err.message),
   });
 
+  const typeField = config.typeField ?? 'type';
   const typeLabel = (t) => config.types.find((x) => x.value === t)?.label ?? t;
   const columns = [
     { key: 'date', header: 'Date', sortable: true, render: (i) => formatDate(i[config.dateField]) },
@@ -76,7 +77,9 @@ export default function DriverItemsTable({
           {
             key: 'type',
             header: 'Type',
-            render: (i) => <Badge tone={config.typeTone?.(i) ?? 'gray'}>{typeLabel(i.type)}</Badge>,
+            render: (i) => (
+              <Badge tone={config.typeTone?.(i) ?? 'gray'}>{typeLabel(i[typeField])}</Badge>
+            ),
           },
         ]
       : []),
@@ -186,14 +189,13 @@ export default function DriverItemsTable({
         open={adding}
         onClose={() => setAdding(false)}
         config={config}
-        driverId={fixed.driverId}
-        defaultType={fixed.type}
+        fixed={fixed}
       />
       <ConfirmDialog
         open={Boolean(voiding)}
         onClose={() => setVoiding(null)}
         title="Void entry"
-        message={`Void ${formatINR(voiding?.amount)} (${voiding && typeLabel(voiding.type)}) for ${voiding?.driver.fullName}? It stays in history but no longer counts in the settlement.`}
+        message={`Void ${formatINR(voiding?.amount)} (${voiding && typeLabel(voiding[typeField])}) for ${voiding?.driver.fullName}? It stays in history but no longer counts in the settlement.`}
         confirmLabel="Void"
         requireReason
         loading={voidItem.isPending}

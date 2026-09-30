@@ -59,6 +59,9 @@ export const PERMISSIONS = Object.freeze({
   DRIVER_FINANCE_VIEW: 'driver_finance.view',
   EARNING_MANAGE: 'earning.manage',
   ADJUSTMENT_MANAGE: 'adjustment.manage',
+  LV_EXPENSE_MANAGE: 'lv_expense.manage',
+  DRIVER_EXPENSE_MANAGE: 'driver_expense.manage',
+  ADVANCE_MANAGE: 'advance.manage',
 });
 
 const { ADMIN, BILLER, AUDITOR } = ROLES;
@@ -152,4 +155,17 @@ export const PERMISSION_DEFINITIONS = [
     'Record/void positive adjustments and other deductions (reason required)',
     [ADMIN, BILLER],
   ],
+  [
+    P.LV_EXPENSE_MANAGE,
+    'Driver finance',
+    'Record/void LV-paid fuel, toll, maintenance and EMI (deducted from settlements)',
+    [ADMIN, BILLER],
+  ],
+  [
+    P.DRIVER_EXPENSE_MANAGE,
+    'Driver finance',
+    'Record/void driver-paid expenses (reimbursed in settlements)',
+    [ADMIN, BILLER],
+  ],
+  [P.ADVANCE_MANAGE, 'Driver finance', 'Record advances and advance recoveries', [ADMIN, BILLER]],
 ].map(([code, module, description, roles]) => ({ code, module, description, roles }));

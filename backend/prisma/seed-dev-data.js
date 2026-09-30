@@ -15,6 +15,11 @@ import {
 } from '../src/modules/company-settlements/company-settlements.service.js';
 import { createDriver } from '../src/modules/drivers/drivers.service.js';
 import { adjustmentsService, earningsService } from '../src/modules/earnings/earnings.service.js';
+import { createAdvance, recordRecovery } from '../src/modules/advances/advances.service.js';
+import {
+  driverExpensesService,
+  lvExpensesService,
+} from '../src/modules/expenses/expenses.service.js';
 import { createRate } from '../src/modules/rates/rates.service.js';
 import { createTrip } from '../src/modules/trips/trips.service.js';
 import { createVehicleType } from '../src/modules/vehicle-types/vehicle-types.service.js';
@@ -284,10 +289,86 @@ async function seedEarnings(actor) {
   console.log(`  ${count} earnings, 1 positive adjustment`);
 }
 
+/** LV-paid and driver-paid expenses, an advance with a partial recovery, a deduction. */
+async function seedExpensesAndAdvances(actor) {
+  if ((await prisma.driverExpense.count()) > 0) {
+    console.log('  expenses/advances already present — skipped');
+    return;
+  }
+  const pairs = await prisma.driverAssignment.findMany({ orderBy: { driverId: 'asc' } });
+  let count = 0;
+  for (const month of ['2026-08', '2026-09']) {
+    for (const [i, { driverId, vehicleId }] of pairs.entries()) {
+      const lv = [
+        ['FUEL', 4000 + i * 250, 'Diesel (fuel card) (DEV)'],
+        ['TOLL', 600 + i * 50, 'FASTag tolls (DEV)'],
+        ['EMI', '3000', 'Vehicle loan EMI (DEV)'],
+        ...(i % 2 === 0 ? [['MAINTENANCE', '1500', 'Periodic service (DEV)']] : []),
+      ];
+      for (const [category, amount, description] of lv) {
+        await lvExpensesService.create(
+          {
+            driverId,
+            vehicleId,
+            category,
+            amount: String(amount),
+            expenseDate: `${month}-20`,
+            description,
+          },
+          actor,
+        );
+        count += 1;
+      }
+      if (i < 2) {
+        await driverExpensesService.create(
+          {
+            driverId,
+            vehicleId,
+            category: 'FUEL',
+            amount: '2000',
+            expenseDate: `${month}-14`,
+            description: 'Paid fuel in cash on outstation trip (DEV)',
+            receiptReference: `DEV-BILL-${month}-${i + 1}`,
+          },
+          actor,
+        );
+        count += 1;
+      }
+    }
+  }
+
+  // Scenario §80 starting point: ₹20,000 advance, ₹8,000 recovered in August.
+  const advance = await createAdvance(
+    {
+      driverId: pairs[0].driverId,
+      amount: '20000',
+      advanceDate: '2026-07-15',
+      reason: 'Medical emergency (DEV)',
+      paymentMethod: 'BANK_TRANSFER',
+      referenceNumber: 'DEV-UTR-ADV-1',
+    },
+    actor,
+  );
+  await recordRecovery(advance.id, { amount: '8000', settlementMonth: '2026-08' }, actor);
+
+  await adjustmentsService.create(
+    {
+      driverId: pairs[1].driverId,
+      type: 'OTHER_DEDUCTION',
+      amount: '2000',
+      adjustmentDate: '2026-09-18',
+      reason: 'Previous overpayment (DEV)',
+    },
+    actor,
+  );
+  console.log(`  ${count} expenses, 1 advance (8,000 recovered), 1 other deduction`);
+}
+
 export async function seedDevelopmentData(actor) {
   console.log('Seeding development data…');
   await seedMasterData(actor);
   await seedCompanySettlements(actor);
   await seedTrips(actor);
   await seedEarnings(actor);
+  await seedExpensesAndAdvances(actor);
 }

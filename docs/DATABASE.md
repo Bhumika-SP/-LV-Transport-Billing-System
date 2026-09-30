@@ -28,6 +28,7 @@ MySQL 8 (`utf8mb4` / `utf8mb4_unicode_ci`) managed through Prisma 6 migrations.
 | `20260930184249_trips`               | 5     | `trips` (+ `KmSource`, `TripSource`, `TripStatus` enums). UNIQUE(`company_id`, `external_trip_id`)                     |
 | `20260930191841_trip_imports`        | 6     | `import_templates`, `import_template_mappings`, `trip_imports`, `import_rows`; FK `trips.import_id`                    |
 | `20260930194859_driver_earnings`     | 7     | `driver_earnings` (ALLOWANCE/OTHER_EARNING), `driver_adjustments` (POSITIVE_ADJUSTMENT/OTHER_DEDUCTION)                |
+| `20260930200411_expenses_advances`   | 8     | `driver_expenses` (paidBy LV/DRIVER), `driver_advances`, `advance_recoveries`                                          |
 
 ## Entity relationship design
 

@@ -113,7 +113,7 @@ Full guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 | 5     | Trips                                                                 | ✅ Complete |
 | 6     | Bulk import                                                           | ✅ Complete |
 | 7     | Driver earnings                                                       | ✅ Complete |
-| 8     | Expenses & advances                                                   |             |
+| 8     | Expenses & advances                                                   | ✅ Complete |
 | 9     | Driver settlement engine                                              |             |
 | 10    | Driver payments                                                       |             |
 | 11    | LV profit                                                             |             |

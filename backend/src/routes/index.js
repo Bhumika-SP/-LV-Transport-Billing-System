@@ -4,7 +4,9 @@ import assignmentsRoutes from '../modules/assignments/assignments.routes.js';
 import authRoutes from '../modules/auth/auth.routes.js';
 import companiesRoutes from '../modules/companies/companies.routes.js';
 import companySettlementsRoutes from '../modules/company-settlements/company-settlements.routes.js';
+import advancesRoutes from '../modules/advances/advances.routes.js';
 import driversRoutes from '../modules/drivers/drivers.routes.js';
+import { driverExpensesRouter, lvExpensesRouter } from '../modules/expenses/expenses.routes.js';
 import { adjustmentsRouter, earningsRouter } from '../modules/earnings/earnings.routes.js';
 import { importsRouter, templatesRouter } from '../modules/imports/imports.routes.js';
 import ratesRoutes from '../modules/rates/rates.routes.js';
@@ -45,5 +47,8 @@ api.use('/trip-imports', importsRouter);
 
 api.use('/earnings', earningsRouter);
 api.use('/adjustments', adjustmentsRouter);
+api.use('/lv-expenses', lvExpensesRouter);
+api.use('/driver-expenses', driverExpensesRouter);
+api.use('/advances', advancesRoutes);
 
 export default api;

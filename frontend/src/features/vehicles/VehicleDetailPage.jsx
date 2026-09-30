@@ -13,6 +13,8 @@ import DataTable from '../../components/ui/DataTable';
 import { ErrorState, LoadingState } from '../../components/ui/States';
 import Tabs from '../../components/ui/Tabs';
 import { PERMISSIONS } from '../../config/permissions';
+import DriverItemsTable from '../driver-finance/DriverItemsTable';
+import { LV_EXPENSES } from '../driver-finance/itemConfigs';
 import TripTable from '../trips/TripTable';
 import { get } from '../../lib/api';
 import { formatDate, formatDateTime, formatINR } from '../../lib/format';
@@ -219,7 +221,7 @@ export default function VehicleDetailPage() {
           {
             key: 'expenses',
             label: 'Fuel / Toll / Maintenance / EMI',
-            content: <PhasePlaceholder what="LV-paid fuel, toll, maintenance and EMI" phase={8} />,
+            content: <DriverItemsTable config={LV_EXPENSES} fixed={{ vehicleId: id }} />,
           },
           {
             key: 'documents',

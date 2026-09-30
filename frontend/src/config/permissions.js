@@ -21,6 +21,9 @@ export const PERMISSIONS = Object.freeze({
   DRIVER_FINANCE_VIEW: 'driver_finance.view',
   EARNING_MANAGE: 'earning.manage',
   ADJUSTMENT_MANAGE: 'adjustment.manage',
+  LV_EXPENSE_MANAGE: 'lv_expense.manage',
+  DRIVER_EXPENSE_MANAGE: 'driver_expense.manage',
+  ADVANCE_MANAGE: 'advance.manage',
 });
 
 export const ROLES = Object.freeze({ ADMIN: 'ADMIN', BILLER: 'BILLER', AUDITOR: 'AUDITOR' });
