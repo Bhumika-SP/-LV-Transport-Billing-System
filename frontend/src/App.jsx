@@ -16,6 +16,8 @@ import ImportBatchPage from './features/imports/ImportBatchPage';
 import ImportsPage from './features/imports/ImportsPage';
 import RolesPage from './features/roles/RolesPage';
 import SettingsPage from './features/settings/SettingsPage';
+import SettlementDetailPage from './features/settlements/SettlementDetailPage';
+import SettlementsPage from './features/settlements/SettlementsPage';
 import TripDetailPage from './features/trips/TripDetailPage';
 import TripsPage from './features/trips/TripsPage';
 import UsersPage from './features/users/UsersPage';
@@ -45,6 +47,7 @@ const PAGES = {
   '/driver-expenses': DriverExpensesPage,
   '/lv-expenses': LvExpensesPage,
   '/advances': AdvancesPage,
+  '/settlements': SettlementsPage,
 };
 
 /** Routes that are not nav entries (detail pages). */
@@ -55,6 +58,7 @@ const DETAIL_ROUTES = [
   { path: '/vehicle-types/:id', Page: VehicleTypeDetailPage, permission: PERMISSIONS.MASTER_VIEW },
   { path: '/trips/:id', Page: TripDetailPage, permission: PERMISSIONS.TRIP_VIEW },
   { path: '/imports/:id', Page: ImportBatchPage, permission: PERMISSIONS.IMPORT_VIEW },
+  { path: '/settlements/:id', Page: SettlementDetailPage, permission: PERMISSIONS.SETTLEMENT_VIEW },
 ];
 
 export default function App() {

@@ -79,6 +79,16 @@ export async function validateImportRows(db, { companyId, template, rows }) {
     db.driverAssignment.findMany(),
   ]);
 
+  // Months whose settlement is under review, approved or finalized cannot receive trips.
+  const lockedSettlements = new Map(
+    (
+      await db.driverSettlement.findMany({
+        where: { status: { in: ['UNDER_REVIEW', 'APPROVED', 'FINALIZED'] } },
+        select: { driverId: true, settlementMonth: true, status: true },
+      })
+    ).map((s) => [`${s.driverId}|${s.settlementMonth}`, s.status]),
+  );
+
   const rateCache = new Map();
   const rateFor = async (vehicleTypeId, date) => {
     const k = `${vehicleTypeId}|${date}`;
@@ -151,6 +161,14 @@ export async function validateImportRows(db, { companyId, template, rows }) {
       rate = await rateFor(vehicle.vehicleTypeId, tripDate);
       if (!rate)
         error('tripDate', `No ${vehicle.vehicleType.name} rate is effective on ${tripDate}`);
+    }
+
+    const locked = driver && tripDate && lockedSettlements.get(`${driver.id}|${monthOf(tripDate)}`);
+    if (locked) {
+      error(
+        'tripDate',
+        `${driver.fullName}'s ${monthOf(tripDate)} settlement is ${locked.replace('_', ' ').toLowerCase()}; it cannot receive new trips`,
+      );
     }
 
     if (driver && driver.status !== 'ACTIVE') warn(`Driver ${driver.fullName} is inactive`);

@@ -239,6 +239,31 @@ View: `driver_finance.view`. Write: `advance.manage` (Admin, Biller).
 | POST   | `/advances/recoveries/:id/void`         | `{ reason }`. Restores the balance                                                                                                |
 | POST   | `/advances/:id/void`                    | `{ reason }`. Only if there are no active recoveries                                                                              |
 
+### Driver settlements — `/api/settlements` (Phase 9)
+
+View `settlement.view` (all roles). Prepare `settlement.prepare` (Admin, Biller). Approve, reject,
+finalize and reopen are **Admin only** (`settlement.approve|finalize|reopen`). Every step also checks the
+current status on the server (409 `INVALID_SETTLEMENT_TRANSITION`).
+
+| Method | Path                          | Notes                                                                                                          |
+| ------ | ----------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| GET    | `/settlements`                | Filters `month`, `driverId`, `status`, `paymentStatus`                                                         |
+| GET    | `/settlements/summary?month=` | Counts per status, `finalizedTotal`, `paidTotal`, `outstandingTotal`                                           |
+| POST   | `/settlements`                | `{ driverId, settlementMonth }` → created and calculated. 409 if one exists; 400 for a future month            |
+| POST   | `/settlements/prepare`        | `{ settlementMonth }` → drafts for every driver with activity. Recalculates DRAFT/CALCULATED; others untouched |
+| GET    | `/settlements/:id`            | Components (with direction), every item, revisions, `isStale`, `outstandingAmount`                             |
+| POST   | `/:id/calculate`              | DRAFT/CALCULATED → CALCULATED (re-runs the engine)                                                             |
+| POST   | `/:id/submit`                 | CALCULATED → UNDER_REVIEW. 409 `SETTLEMENT_STALE` if data changed                                              |
+| POST   | `/:id/withdraw`               | UNDER_REVIEW → DRAFT (preparer)                                                                                |
+| POST   | `/:id/approve`                | [Admin] UNDER_REVIEW → APPROVED (staleness re-checked)                                                         |
+| POST   | `/:id/reject`                 | [Admin] `{ reason }` UNDER_REVIEW/APPROVED → DRAFT                                                             |
+| POST   | `/:id/finalize`               | [Admin] APPROVED → FINALIZED, sets `paymentStatus`. 409 `NEGATIVE_SETTLEMENT` / `PAID_EXCEEDS_FINAL`           |
+| POST   | `/:id/reopen`                 | [Admin] `{ reason }` FINALIZED → DRAFT. Revision snapshot kept, version +1                                     |
+
+**Month lock** (applies to trips, imports, earnings, adjustments, expenses, advance recoveries): writes
+for a driver-month whose settlement is UNDER_REVIEW/APPROVED → 409 `SETTLEMENT_IN_REVIEW`, FINALIZED →
+409 `SETTLEMENT_LOCKED`. A CALCULATED settlement silently returns to DRAFT (recalculation required).
+
 ### Planned modules (spec §61)
 
 `/api/auth`, `/api/users`, `/api/companies`, `/api/drivers`, `/api/vehicles`,

@@ -86,14 +86,16 @@ GROSS DRIVER EARNINGS = TRIP EARNINGS + ALLOWANCES + OTHER EARNINGS + POSITIVE A
 
 ```
   TRIP EARNINGS + ALLOWANCES + OTHER EARNINGS + POSITIVE ADJUSTMENTS      (= gross earnings)
-+ DRIVER-PAID EXPENSE REIMBURSEMENTS
++ DRIVER-PAID EXPENSE REIMBURSEMENTS                                      (= subtotal / total additions)
 − LV-PAID FUEL − LV-PAID TOLL − LV-PAID MAINTENANCE − LV-PAID EMI
-− ADVANCE RECOVERY − OTHER DRIVER DEDUCTIONS
+− ADVANCE RECOVERY − OTHER DRIVER DEDUCTIONS                              (= total deductions)
 = FINAL DRIVER SETTLEMENT
 ```
 
-- Monthly only, with one settlement per driver per month (database UNIQUE).
-- Each component is stored with line-level items so the calculation is transparent.
+- Monthly only; one settlement per driver per month (DB UNIQUE).
+- **Engine** (`settlement-engine.js`): collects every ACTIVE source row of the driver-month (trips, earnings, adjustments, expenses, advance recoveries). Stores one **item per source row** plus the 11 component totals, and computes with `settlement-formula.js`. It is deterministic, and a SHA-256 fingerprint of the items detects stale calculations.
+- The backend is the only calculator. The UI shows the stored components and items (§49 layout).
+- A **negative** final amount cannot be finalized (A24). Carry the balance forward as an other deduction next month.
 
 ## R6. Expense direction (Phase 8)
 
@@ -124,12 +126,14 @@ Every deduction has an amount, a reason, the driver, the settlement month, the d
 ## R9. Settlement workflow (Phase 9)
 
 ```
-DRAFT → CALCULATED → UNDER_REVIEW → APPROVED → FINALIZED
-          (biller prepares)          (admin/manager only)
+DRAFT → CALCULATED → UNDER_REVIEW → APPROVED → FINALIZED  (+ payment status UNPAID / PARTIALLY_PAID / PAID)
+   (Biller: create, calculate, submit, withdraw)   (Admin/Manager: approve, reject, finalize, reopen)
 ```
 
-- Billers cannot approve or finalize. This is enforced by the backend.
-- **Reopen** is for Admin/Manager only. It requires a reason, preserves a snapshot of the finalized state, is audited, and returns the settlement to an editable state. Recalculation, re-approval and re-finalization are then required.
+- **Billers cannot approve, finalize or reopen.** Enforced by permission and by status on the server.
+- Submit, approve and finalize **re-run the engine and refuse a stale calculation**.
+- **Month lock:** once submitted, the driver-month's data (trips, imports, earnings, adjustments, expenses, recoveries) cannot change until it is withdrawn, rejected or reopened. After finalization it is locked until reopened. Editing data under a CALCULATED settlement returns it to DRAFT.
+- **Reopen** (Admin only) needs a mandatory reason. The finalized settlement and its items are preserved as a **revision snapshot**. Version +1. The settlement returns to DRAFT, so recalculation, re-approval and re-finalization are all required. Every step is audited (CREATE, CALCULATE, SUBMIT, APPROVE, REJECT, FINALIZE, REOPEN).
 
 ## R10. Payments (Phase 10)
 

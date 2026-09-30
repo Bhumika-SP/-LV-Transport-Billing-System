@@ -27,6 +27,14 @@ const STATUS_TONES = {
   OPEN: 'amber',
   RECOVERED: 'green',
   VOID: 'red',
+  DRAFT: 'gray',
+  CALCULATED: 'blue',
+  UNDER_REVIEW: 'amber',
+  APPROVED: 'blue',
+  FINALIZED: 'green',
+  UNPAID: 'red',
+  PARTIALLY_PAID: 'amber',
+  PAID: 'green',
 };
 
 export default function Badge({ tone = 'gray', children }) {

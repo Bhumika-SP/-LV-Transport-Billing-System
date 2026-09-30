@@ -7,6 +7,7 @@ import { activeOnWhere } from '../../utils/periods.js';
 import { findOr404, rethrowUnique } from '../../utils/records.js';
 import { AUDIT_ACTIONS, recordAudit } from '../audit/audit.service.js';
 import { resolveRate } from '../rates/rates.service.js';
+import { assertSettlementOpen } from '../settlements/settlement-lock.js';
 import { calculateTripEarnings, resolveKm } from './trip-calculations.js';
 
 const NOT_FOUND = { code: 'TRIP_NOT_FOUND', label: 'Trip' };
@@ -199,6 +200,7 @@ export async function createTrip(input, actor, req, { source = 'MANUAL' } = {}) 
   try {
     return await prisma.$transaction(async (tx) => {
       const priced = await priceTrip(tx, input);
+      await assertSettlementOpen(tx, input.driverId, monthOf(input.tripDate));
       const trip = await tx.trip.create({
         data: {
           ...tripData(input, priced),
@@ -259,6 +261,14 @@ export async function updateTrip(id, changes, actor, req) {
     return await prisma.$transaction(async (tx) => {
       const before = await loadActive(tx, id);
       const merged = { ...toInput(before), ...changes };
+      // Both the month the trip leaves and the month it lands in must be open.
+      await assertSettlementOpen(tx, before.driverId, before.settlementMonth);
+      if (
+        merged.driverId !== before.driverId ||
+        monthOf(merged.tripDate) !== before.settlementMonth
+      ) {
+        await assertSettlementOpen(tx, merged.driverId, monthOf(merged.tripDate));
+      }
       if (changes.kmSource === 'DIRECT' && changes.totalKm === undefined) {
         merged.totalKm = before.totalKm.toFixed(2);
       }
@@ -313,6 +323,7 @@ export async function updateTrip(id, changes, actor, req) {
 export function cancelTrip(id, { reason }, actor, req) {
   return prisma.$transaction(async (tx) => {
     const before = await loadActive(tx, id);
+    await assertSettlementOpen(tx, before.driverId, before.settlementMonth);
     const after = await tx.trip.update({
       where: { id },
       data: {
@@ -345,6 +356,7 @@ export function cancelTrip(id, { reason }, actor, req) {
 async function recalculateOne(tx, trip, actor, reason, req) {
   const priced = await priceTrip(tx, toInput(trip));
   const next = tripData(toInput(trip), priced);
+  await assertSettlementOpen(tx, trip.driverId, trip.settlementMonth);
   const changed =
     next.rateId !== trip.rateId ||
     next.vehicleTypeId !== trip.vehicleTypeId ||

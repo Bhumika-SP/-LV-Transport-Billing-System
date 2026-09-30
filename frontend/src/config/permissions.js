@@ -24,6 +24,11 @@ export const PERMISSIONS = Object.freeze({
   LV_EXPENSE_MANAGE: 'lv_expense.manage',
   DRIVER_EXPENSE_MANAGE: 'driver_expense.manage',
   ADVANCE_MANAGE: 'advance.manage',
+  SETTLEMENT_VIEW: 'settlement.view',
+  SETTLEMENT_PREPARE: 'settlement.prepare',
+  SETTLEMENT_APPROVE: 'settlement.approve',
+  SETTLEMENT_FINALIZE: 'settlement.finalize',
+  SETTLEMENT_REOPEN: 'settlement.reopen',
 });
 
 export const ROLES = Object.freeze({ ADMIN: 'ADMIN', BILLER: 'BILLER', AUDITOR: 'AUDITOR' });

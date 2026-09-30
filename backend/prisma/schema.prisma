@@ -96,32 +96,38 @@ model User {
   createdUsers User[]     @relation("UserCreatedBy")
   auditLogs    AuditLog[]
 
-  companiesCreated           Company[]           @relation("CompanyCreatedBy")
-  driversCreated             Driver[]            @relation("DriverCreatedBy")
-  vehicleTypesCreated        VehicleType[]       @relation("VehicleTypeCreatedBy")
-  ratesCreated               VehicleTypeRate[]   @relation("RateCreatedBy")
-  ratesCancelled             VehicleTypeRate[]   @relation("RateCancelledBy")
-  vehiclesCreated            Vehicle[]           @relation("VehicleCreatedBy")
-  vehicleAssignmentsCreated  VehicleAssignment[] @relation("VehicleAssignmentCreatedBy")
-  driverAssignmentsCreated   DriverAssignment[]  @relation("DriverAssignmentCreatedBy")
-  companySettlementsCreated  CompanySettlement[] @relation("CompanySettlementCreatedBy")
-  companySettlementsReceived CompanySettlement[] @relation("CompanySettlementReceivedBy")
-  tripsCreated               Trip[]              @relation("TripCreatedBy")
-  tripsUpdated               Trip[]              @relation("TripUpdatedBy")
-  tripsCancelled             Trip[]              @relation("TripCancelledBy")
-  importTemplatesCreated     ImportTemplate[]    @relation("ImportTemplateCreatedBy")
-  importsUploaded            TripImport[]        @relation("ImportUploadedBy")
-  importsImported            TripImport[]        @relation("ImportImportedBy")
-  earningsCreated            DriverEarning[]     @relation("EarningCreatedBy")
-  earningsVoided             DriverEarning[]     @relation("EarningVoidedBy")
-  adjustmentsCreated         DriverAdjustment[]  @relation("AdjustmentCreatedBy")
-  adjustmentsVoided          DriverAdjustment[]  @relation("AdjustmentVoidedBy")
-  expensesCreated            DriverExpense[]     @relation("ExpenseCreatedBy")
-  expensesVoided             DriverExpense[]     @relation("ExpenseVoidedBy")
-  advancesCreated            DriverAdvance[]     @relation("AdvanceCreatedBy")
-  advancesVoided             DriverAdvance[]     @relation("AdvanceVoidedBy")
-  recoveriesCreated          AdvanceRecovery[]   @relation("RecoveryCreatedBy")
-  recoveriesVoided           AdvanceRecovery[]   @relation("RecoveryVoidedBy")
+  companiesCreated           Company[]                  @relation("CompanyCreatedBy")
+  driversCreated             Driver[]                   @relation("DriverCreatedBy")
+  vehicleTypesCreated        VehicleType[]              @relation("VehicleTypeCreatedBy")
+  ratesCreated               VehicleTypeRate[]          @relation("RateCreatedBy")
+  ratesCancelled             VehicleTypeRate[]          @relation("RateCancelledBy")
+  vehiclesCreated            Vehicle[]                  @relation("VehicleCreatedBy")
+  vehicleAssignmentsCreated  VehicleAssignment[]        @relation("VehicleAssignmentCreatedBy")
+  driverAssignmentsCreated   DriverAssignment[]         @relation("DriverAssignmentCreatedBy")
+  companySettlementsCreated  CompanySettlement[]        @relation("CompanySettlementCreatedBy")
+  companySettlementsReceived CompanySettlement[]        @relation("CompanySettlementReceivedBy")
+  tripsCreated               Trip[]                     @relation("TripCreatedBy")
+  tripsUpdated               Trip[]                     @relation("TripUpdatedBy")
+  tripsCancelled             Trip[]                     @relation("TripCancelledBy")
+  importTemplatesCreated     ImportTemplate[]           @relation("ImportTemplateCreatedBy")
+  importsUploaded            TripImport[]               @relation("ImportUploadedBy")
+  importsImported            TripImport[]               @relation("ImportImportedBy")
+  earningsCreated            DriverEarning[]            @relation("EarningCreatedBy")
+  earningsVoided             DriverEarning[]            @relation("EarningVoidedBy")
+  adjustmentsCreated         DriverAdjustment[]         @relation("AdjustmentCreatedBy")
+  adjustmentsVoided          DriverAdjustment[]         @relation("AdjustmentVoidedBy")
+  expensesCreated            DriverExpense[]            @relation("ExpenseCreatedBy")
+  expensesVoided             DriverExpense[]            @relation("ExpenseVoidedBy")
+  advancesCreated            DriverAdvance[]            @relation("AdvanceCreatedBy")
+  advancesVoided             DriverAdvance[]            @relation("AdvanceVoidedBy")
+  recoveriesCreated          AdvanceRecovery[]          @relation("RecoveryCreatedBy")
+  recoveriesVoided           AdvanceRecovery[]          @relation("RecoveryVoidedBy")
+  settlementsCreated         DriverSettlement[]         @relation("SettlementCreatedBy")
+  settlementsCalculated      DriverSettlement[]         @relation("SettlementCalculatedBy")
+  settlementsSubmitted       DriverSettlement[]         @relation("SettlementSubmittedBy")
+  settlementsApproved        DriverSettlement[]         @relation("SettlementApprovedBy")
+  settlementsFinalized       DriverSettlement[]         @relation("SettlementFinalizedBy")
+  settlementRevisions        DriverSettlementRevision[] @relation("SettlementReopenedBy")
 
   @@index([roleId])
   @@index([status])
@@ -232,6 +238,7 @@ model Driver {
   expenses    DriverExpense[]
   advances    DriverAdvance[]
   recoveries  AdvanceRecovery[]
+  settlements DriverSettlement[]
 
   @@index([status])
   @@index([fullName])
@@ -802,4 +809,137 @@ model AdvanceRecovery {
   @@index([advanceId])
   @@index([driverId, settlementMonth])
   @@map("advance_recoveries")
+}
+
+// ============================================================
+// Phase 9 — Driver settlement engine
+// ============================================================
+
+enum SettlementStatus {
+  DRAFT
+  CALCULATED
+  UNDER_REVIEW
+  APPROVED
+  FINALIZED
+}
+
+/// Payment status applies once a settlement is FINALIZED (assumption A2).
+enum SettlementPaymentStatus {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+}
+
+enum SettlementComponent {
+  TRIP_EARNINGS
+  ALLOWANCE
+  OTHER_EARNING
+  POSITIVE_ADJUSTMENT
+  REIMBURSEMENT
+  FUEL
+  TOLL
+  MAINTENANCE
+  EMI
+  ADVANCE_RECOVERY
+  OTHER_DEDUCTION
+}
+
+enum SettlementDirection {
+  ADD
+  DEDUCT
+}
+
+/// Monthly driver settlement (spec §27–31). One per driver per month. Component totals
+/// and the final amount are stored exactly as calculated by settlement-formula.js.
+model DriverSettlement {
+  id                  Int                      @id @default(autoincrement())
+  driverId            Int                      @map("driver_id")
+  settlementMonth     String                   @map("settlement_month") @db.Char(7)
+  status              SettlementStatus         @default(DRAFT)
+  paymentStatus       SettlementPaymentStatus? @map("payment_status")
+  tripEarnings        Decimal                  @default(0) @map("trip_earnings") @db.Decimal(15, 2)
+  allowances          Decimal                  @default(0) @db.Decimal(15, 2)
+  otherEarnings       Decimal                  @default(0) @map("other_earnings") @db.Decimal(15, 2)
+  positiveAdjustments Decimal                  @default(0) @map("positive_adjustments") @db.Decimal(15, 2)
+  reimbursements      Decimal                  @default(0) @db.Decimal(15, 2)
+  fuel                Decimal                  @default(0) @db.Decimal(15, 2)
+  toll                Decimal                  @default(0) @db.Decimal(15, 2)
+  maintenance         Decimal                  @default(0) @db.Decimal(15, 2)
+  emi                 Decimal                  @default(0) @db.Decimal(15, 2)
+  advanceRecovery     Decimal                  @default(0) @map("advance_recovery") @db.Decimal(15, 2)
+  otherDeductions     Decimal                  @default(0) @map("other_deductions") @db.Decimal(15, 2)
+  grossEarnings       Decimal                  @default(0) @map("gross_earnings") @db.Decimal(15, 2)
+  totalAdditions      Decimal                  @default(0) @map("total_additions") @db.Decimal(15, 2)
+  totalDeductions     Decimal                  @default(0) @map("total_deductions") @db.Decimal(15, 2)
+  finalAmount         Decimal                  @default(0) @map("final_amount") @db.Decimal(15, 2)
+  /// Sum of VALID driver payments (Phase 10).
+  paidAmount          Decimal                  @default(0) @map("paid_amount") @db.Decimal(15, 2)
+  itemCount           Int                      @default(0) @map("item_count")
+  /// SHA-256 of the calculated items; detects stale calculations.
+  calculationHash     String?                  @map("calculation_hash") @db.Char(64)
+  version             Int                      @default(1)
+  reopenCount         Int                      @default(0) @map("reopen_count")
+  notes               String?                  @db.Text
+  calculatedAt        DateTime?                @map("calculated_at")
+  calculatedById      Int?                     @map("calculated_by_id")
+  submittedAt         DateTime?                @map("submitted_at")
+  submittedById       Int?                     @map("submitted_by_id")
+  approvedAt          DateTime?                @map("approved_at")
+  approvedById        Int?                     @map("approved_by_id")
+  finalizedAt         DateTime?                @map("finalized_at")
+  finalizedById       Int?                     @map("finalized_by_id")
+  createdById         Int?                     @map("created_by_id")
+  createdAt           DateTime                 @default(now()) @map("created_at")
+  updatedAt           DateTime                 @updatedAt @map("updated_at")
+
+  driver       Driver                     @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  createdBy    User?                      @relation("SettlementCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  calculatedBy User?                      @relation("SettlementCalculatedBy", fields: [calculatedById], references: [id], onDelete: SetNull)
+  submittedBy  User?                      @relation("SettlementSubmittedBy", fields: [submittedById], references: [id], onDelete: SetNull)
+  approvedBy   User?                      @relation("SettlementApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
+  finalizedBy  User?                      @relation("SettlementFinalizedBy", fields: [finalizedById], references: [id], onDelete: SetNull)
+  items        DriverSettlementItem[]
+  revisions    DriverSettlementRevision[]
+
+  @@unique([driverId, settlementMonth])
+  @@index([settlementMonth, status])
+  @@index([status])
+  @@map("driver_settlements")
+}
+
+/// One line per source row included in the calculation (transparent breakdown, §63).
+model DriverSettlementItem {
+  id           Int                 @id @default(autoincrement())
+  settlementId Int                 @map("settlement_id")
+  component    SettlementComponent
+  direction    SettlementDirection
+  /// TRIP | DRIVER_EARNING | ADJUSTMENT | EXPENSE | ADVANCE_RECOVERY
+  sourceType   String              @map("source_type") @db.VarChar(30)
+  sourceId     Int                 @map("source_id")
+  sourceDate   DateTime?           @map("source_date") @db.Date
+  description  String              @db.VarChar(500)
+  amount       Decimal             @db.Decimal(15, 2)
+
+  settlement DriverSettlement @relation(fields: [settlementId], references: [id], onDelete: Cascade)
+
+  @@index([settlementId, component])
+  @@index([sourceType, sourceId])
+  @@map("driver_settlement_items")
+}
+
+/// Snapshot of a FINALIZED settlement taken when it is reopened (spec §31).
+model DriverSettlementRevision {
+  id           Int      @id @default(autoincrement())
+  settlementId Int      @map("settlement_id")
+  version      Int
+  snapshot     Json
+  reason       String   @db.Text
+  reopenedById Int?     @map("reopened_by_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  settlement DriverSettlement @relation(fields: [settlementId], references: [id], onDelete: Restrict)
+  reopenedBy User?            @relation("SettlementReopenedBy", fields: [reopenedById], references: [id], onDelete: SetNull)
+
+  @@unique([settlementId, version])
+  @@map("driver_settlement_revisions")
 }

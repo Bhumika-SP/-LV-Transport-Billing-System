@@ -4,6 +4,7 @@ import { AppError } from '../../utils/AppError.js';
 import { parseDateOnly } from '../../utils/dates.js';
 import { findPage } from '../../utils/pagination.js';
 import { findOr404, lockRow } from '../../utils/records.js';
+import { assertSettlementOpen } from '../settlements/settlement-lock.js';
 import { AUDIT_ACTIONS, recordAudit } from '../audit/audit.service.js';
 import { parseImportFile } from './file-parser.js';
 import { getTemplate } from './import-templates.service.js';
@@ -155,6 +156,7 @@ export async function confirmImport(id, { includeWarnings }, actor, req) {
           const n = r.normalized;
           let tripId = null;
           if (importableRows.has(r.rowNumber)) {
+            await assertSettlementOpen(tx, n.driverId, n.settlementMonth);
             const trip = await tx.trip.create({
               data: {
                 ...n,

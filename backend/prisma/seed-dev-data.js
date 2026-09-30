@@ -21,6 +21,12 @@ import {
   lvExpensesService,
 } from '../src/modules/expenses/expenses.service.js';
 import { createRate } from '../src/modules/rates/rates.service.js';
+import {
+  approveSettlement,
+  finalizeSettlement,
+  prepareMonth,
+  submitSettlement,
+} from '../src/modules/settlements/settlements.service.js';
 import { createTrip } from '../src/modules/trips/trips.service.js';
 import { createVehicleType } from '../src/modules/vehicle-types/vehicle-types.service.js';
 import { createVehicle } from '../src/modules/vehicles/vehicles.service.js';
@@ -364,6 +370,31 @@ async function seedExpensesAndAdvances(actor) {
   console.log(`  ${count} expenses, 1 advance (8,000 recovered), 1 other deduction`);
 }
 
+/**
+ * August 2026: prepared and taken through submit → approve → finalize (negative results
+ * are left calculated — they cannot be finalized). September 2026: prepared drafts.
+ */
+async function seedSettlements(actor) {
+  if ((await prisma.driverSettlement.count()) > 0) {
+    console.log('  settlements already present — skipped');
+    return;
+  }
+  await prepareMonth({ settlementMonth: '2026-08' }, actor);
+  const august = await prisma.driverSettlement.findMany({ where: { settlementMonth: '2026-08' } });
+  let finalized = 0;
+  for (const s of august) {
+    if (s.finalAmount.isNegative()) continue;
+    await submitSettlement(s.id, actor);
+    await approveSettlement(s.id, actor);
+    await finalizeSettlement(s.id, actor);
+    finalized += 1;
+  }
+  const sept = await prepareMonth({ settlementMonth: '2026-09' }, actor);
+  console.log(
+    `  settlements: Aug ${august.length} (${finalized} finalized), Sep ${sept.created} calculated drafts`,
+  );
+}
+
 export async function seedDevelopmentData(actor) {
   console.log('Seeding development data…');
   await seedMasterData(actor);
@@ -371,4 +402,5 @@ export async function seedDevelopmentData(actor) {
   await seedTrips(actor);
   await seedEarnings(actor);
   await seedExpensesAndAdvances(actor);
+  await seedSettlements(actor);
 }

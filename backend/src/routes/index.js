@@ -12,6 +12,7 @@ import { importsRouter, templatesRouter } from '../modules/imports/imports.route
 import ratesRoutes from '../modules/rates/rates.routes.js';
 import rolesRoutes from '../modules/roles/roles.routes.js';
 import settingsRoutes from '../modules/settings/settings.routes.js';
+import settlementsRoutes from '../modules/settlements/settlements.routes.js';
 import tripsRoutes from '../modules/trips/trips.routes.js';
 import usersRoutes from '../modules/users/users.routes.js';
 import vehicleTypesRoutes from '../modules/vehicle-types/vehicle-types.routes.js';
@@ -50,5 +51,6 @@ api.use('/adjustments', adjustmentsRouter);
 api.use('/lv-expenses', lvExpensesRouter);
 api.use('/driver-expenses', driverExpensesRouter);
 api.use('/advances', advancesRoutes);
+api.use('/settlements', settlementsRoutes);
 
 export default api;

@@ -114,7 +114,7 @@ Full guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 | 6     | Bulk import                                                           | ✅ Complete |
 | 7     | Driver earnings                                                       | ✅ Complete |
 | 8     | Expenses & advances                                                   | ✅ Complete |
-| 9     | Driver settlement engine                                              |             |
+| 9     | Driver settlement engine                                              | ✅ Complete |
 | 10    | Driver payments                                                       |             |
 | 11    | LV profit                                                             |             |
 | 12    | Dashboards                                                            |             |

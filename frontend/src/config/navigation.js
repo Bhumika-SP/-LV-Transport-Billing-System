@@ -111,7 +111,13 @@ export const NAV_SECTIONS = [
         phase: 8,
         permission: P.DRIVER_FINANCE_VIEW,
       },
-      { label: 'Driver Settlements', path: '/settlements', icon: Calculator, phase: 9, roles: ALL },
+      {
+        label: 'Driver Settlements',
+        path: '/settlements',
+        icon: Calculator,
+        phase: 9,
+        permission: P.SETTLEMENT_VIEW,
+      },
       { label: 'Driver Payments', path: '/payments', icon: Banknote, phase: 10, roles: ALL },
       {
         label: 'LV Expenses',

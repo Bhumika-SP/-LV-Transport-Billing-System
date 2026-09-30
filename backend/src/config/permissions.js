@@ -62,6 +62,12 @@ export const PERMISSIONS = Object.freeze({
   LV_EXPENSE_MANAGE: 'lv_expense.manage',
   DRIVER_EXPENSE_MANAGE: 'driver_expense.manage',
   ADVANCE_MANAGE: 'advance.manage',
+  // Driver settlements (Phase 9)
+  SETTLEMENT_VIEW: 'settlement.view',
+  SETTLEMENT_PREPARE: 'settlement.prepare',
+  SETTLEMENT_APPROVE: 'settlement.approve',
+  SETTLEMENT_FINALIZE: 'settlement.finalize',
+  SETTLEMENT_REOPEN: 'settlement.reopen',
 });
 
 const { ADMIN, BILLER, AUDITOR } = ROLES;
@@ -168,4 +174,29 @@ export const PERMISSION_DEFINITIONS = [
     [ADMIN, BILLER],
   ],
   [P.ADVANCE_MANAGE, 'Driver finance', 'Record advances and advance recoveries', [ADMIN, BILLER]],
+  [
+    P.SETTLEMENT_VIEW,
+    'Driver settlement',
+    'View driver settlements and their calculation',
+    [ADMIN, BILLER, AUDITOR],
+  ],
+  [
+    P.SETTLEMENT_PREPARE,
+    'Driver settlement',
+    'Create, calculate, submit for review and withdraw settlements',
+    [ADMIN, BILLER],
+  ],
+  [
+    P.SETTLEMENT_APPROVE,
+    'Driver settlement',
+    'Approve or reject settlements under review',
+    [ADMIN],
+  ],
+  [P.SETTLEMENT_FINALIZE, 'Driver settlement', 'Finalize approved settlements', [ADMIN]],
+  [
+    P.SETTLEMENT_REOPEN,
+    'Driver settlement',
+    'Reopen a finalized settlement (mandatory reason)',
+    [ADMIN],
+  ],
 ].map(([code, module, description, roles]) => ({ code, module, description, roles }));
