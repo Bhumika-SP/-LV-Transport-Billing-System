@@ -177,6 +177,25 @@ Trip body: `{ companyId, driverId, vehicleId, tripDate, kmSource: "START_END"|"D
 Rate responses: `POST /rates` also returns `tripsOnPreviousRate` (trips dated on/after the new rate still
 priced with the superseded one). `POST /rates/:id/cancel` returns `{ rate, tripsUsingRate }`.
 
+### Bulk import — `/api/import-templates`, `/api/trip-imports` (Phase 6)
+
+View: `import.view` (all roles). Everything else: `trip.import` (Admin, Biller). Uploads are
+`multipart/form-data` with a `file` field: `.xlsx` or `.csv`, max 5 MB, max 5,000 data rows. The type
+is verified from the file bytes, not the name alone.
+
+| Method       | Path                                            | Notes                                                                                                                                                                                                 |
+| ------------ | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET          | `/import-templates/meta`                        | Target fields, date formats, driver-match options, duplicate-key fields                                                                                                                               |
+| GET          | `/import-templates?companyId=&includeInactive=` | Templates with `mappings: { targetField: "Column header" }`                                                                                                                                           |
+| POST / PATCH | `/import-templates`, `/import-templates/:id`    | `{ companyId, name, dateFormat, kmMode, driverMatchField, duplicateKey[], keepUnmapped, mappings }`. Required fields for the KM mode and the duplicate-key fields must be mapped                      |
+| POST         | `/trip-imports/inspect`                         | file → `{ headers, rowCount, sampleRows }`. Nothing stored                                                                                                                                            |
+| POST         | `/trip-imports`                                 | file + `companyId` + `templateId` → VALIDATED batch with counts (`totalRows, validRows, warningRows, errorRows, duplicateRows`). No trips created. 400 `MISSING_COLUMNS` if mapped headers are absent |
+| GET          | `/trip-imports`, `/trip-imports/:id`            | History (filters `companyId`, `status`) and batch summary                                                                                                                                             |
+| GET          | `/trip-imports/:id/rows?status=`                | Row-level results: `raw`, `normalized` (incl. computed earnings), `messages[{level, field, message}]`, `tripId`                                                                                       |
+| GET          | `/trip-imports/:id/errors.csv?includeWarnings=` | Problem rows with row number, status, messages and original values (UTF-8 BOM; formula-injection safe)                                                                                                |
+| POST         | `/trip-imports/:id/confirm`                     | `{ includeWarnings: true }`. Re-validates, then imports all importable rows in **one transaction** (company-locked). Unexpected failure → nothing saved, batch `FAILED`, 500 `IMPORT_FAILED`          |
+| POST         | `/trip-imports/:id/discard`                     | VALIDATED → DISCARDED                                                                                                                                                                                 |
+
 ### Planned modules (spec §61)
 
 `/api/auth`, `/api/users`, `/api/companies`, `/api/drivers`, `/api/vehicles`,

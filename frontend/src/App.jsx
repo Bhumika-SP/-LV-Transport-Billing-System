@@ -9,6 +9,8 @@ import CompanyDetailPage from './features/companies/CompanyDetailPage';
 import CompanySettlementsPage from './features/company-settlements/CompanySettlementsPage';
 import DriverDetailPage from './features/drivers/DriverDetailPage';
 import DriversPage from './features/drivers/DriversPage';
+import ImportBatchPage from './features/imports/ImportBatchPage';
+import ImportsPage from './features/imports/ImportsPage';
 import RolesPage from './features/roles/RolesPage';
 import SettingsPage from './features/settings/SettingsPage';
 import TripDetailPage from './features/trips/TripDetailPage';
@@ -35,6 +37,7 @@ const PAGES = {
   '/assignments': AssignmentsPage,
   '/company-settlements': CompanySettlementsPage,
   '/trips': TripsPage,
+  '/imports': ImportsPage,
 };
 
 /** Routes that are not nav entries (detail pages). */
@@ -44,6 +47,7 @@ const DETAIL_ROUTES = [
   { path: '/vehicles/:id', Page: VehicleDetailPage, permission: PERMISSIONS.MASTER_VIEW },
   { path: '/vehicle-types/:id', Page: VehicleTypeDetailPage, permission: PERMISSIONS.MASTER_VIEW },
   { path: '/trips/:id', Page: TripDetailPage, permission: PERMISSIONS.TRIP_VIEW },
+  { path: '/imports/:id', Page: ImportBatchPage, permission: PERMISSIONS.IMPORT_VIEW },
 ];
 
 export default function App() {

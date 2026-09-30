@@ -83,6 +83,12 @@ routes → controllers → services (business rules) → Prisma → MySQL
 - **Audit:** `LOGIN`, `LOGIN_FAILED`, `LOGOUT`, `PASSWORD_CHANGE`, `PASSWORD_RESET`, user `CREATE`/`UPDATE`/`STATUS_CHANGE`/`ROLE_CHANGE` are written to `audit_logs` inside the same transaction as the change.
 - **Frontend:** `AuthProvider` (from `/auth/me`), `RequireAuth` and `RequireAccess` guards, and navigation filtered by `permission`/`roles`. A 401 anywhere drops the session. All of this is UX only; the API is the authority.
 
+## RBAC sync at startup
+
+The API syncs `roles` / `permissions` / `role_permissions` from `src/config/permissions.js` every
+time it starts (idempotent). A deploy that adds permissions can never run with a stale matrix.
+`npm run db:seed` does the same.
+
 ## Concurrency
 
 Rules that span rows (no overlapping rates or assignments, and later balances and
@@ -137,3 +143,4 @@ would break a cross-site setup where the frontend is on `*.vercel.app` and the A
 | A18 | Trip edits and recalculation                  | Edits keep the stored rate unless the date or vehicle changes. Recalculation re-reads the vehicle's **current** type (so a corrected vehicle type can be applied) and the rate effective on the trip date.                                                                                                                                                                                  | Decided                                     |
 | A19 | Cancelling a used rate                        | Allowed (to fix entry errors). Trips priced with it keep their stored values, and the API reports how many, so an admin can recalculate explicitly.                                                                                                                                                                                                                                         | Decided                                     |
 | A20 | Trip data rules                               | Trip date cannot be in the future. Zero KM is allowed (only negatives are forbidden). Inactive company, driver or vehicle on a trip is a warning, not an error, so historical entries can be caught up.                                                                                                                                                                                     | Decided                                     |
+| A21 | Import limits and rules                       | 5 MB / 5,000 rows per file. The first non-empty row is the header. ISO dates are always accepted besides the template format. Warning rows are imported unless excluded at confirm. A row whose duplicate key needs an external trip ID that is blank is imported with a "duplicate check skipped" warning.                                                                                 | Decided, limits configurable in code        |

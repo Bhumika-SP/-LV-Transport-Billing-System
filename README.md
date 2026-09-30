@@ -111,7 +111,7 @@ Full guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 | 3     | Master data (companies, drivers, vehicles, types, rates, assignments) | ✅ Complete |
 | 4     | Company settlement                                                    | ✅ Complete |
 | 5     | Trips                                                                 | ✅ Complete |
-| 6     | Bulk import                                                           |             |
+| 6     | Bulk import                                                           | ✅ Complete |
 | 7     | Driver earnings                                                       |             |
 | 8     | Expenses & advances                                                   |             |
 | 9     | Driver settlement engine                                              |             |

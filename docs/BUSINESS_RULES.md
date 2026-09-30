@@ -53,6 +53,16 @@ TRIP EARNINGS = TOTAL KM × VEHICLE-TYPE RATE EFFECTIVE ON THE TRIP DATE   (roun
 - By default a vehicle serves one company at a time, a driver drives one vehicle at a time, and a vehicle has one driver at a time. Each rule is a setting (see A12).
 - Only ACTIVE drivers, vehicles and companies can be newly assigned. Assignments are ended by setting an end date, never deleted.
 
+## R3c. Bulk import (Phase 6)
+
+- **Templates:** nothing about a company's file layout is hard-coded. Each company has templates with its column mapping, date format, KM method, how drivers are identified (code, licence, phone or unique name) and the **duplicate key**.
+- **Workflow:** upload → company → template → read → map → normalize → validate → duplicates → **preview** → confirm → **transactional** import → summary → history.
+- **Row statuses:** VALID, WARNING (imported by default; can be excluded), ERROR (never imported), DUPLICATE (never imported) and IMPORTED.
+- **Validation:** required fields, date format (ISO `YYYY-MM-DD` is always accepted too), future dates, driver and vehicle existence (registration normalized), KM rules, rate availability, text lengths. Unmatched company/vehicle/driver assignments are warnings (A5).
+- **Duplicates:** matched within the company against existing ACTIVE trips and earlier rows of the same file, using the template's key (default: external trip ID if mapped, else date + vehicle + driver + reference). An external trip ID already used by any trip of the company, even a cancelled one, is always a duplicate, because the database keeps it unique. The reason is recorded on the row.
+- **Pricing:** imported trips use exactly the same KM, rate and earnings functions as manual trips.
+- **Confirm:** re-validates against current data before inserting. All-or-nothing.
+
 ## R4. Company settlement (Phase 4)
 
 - One record per company per month, enforced by a database UNIQUE on (`company_id`, `settlement_month`).

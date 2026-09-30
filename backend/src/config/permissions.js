@@ -52,6 +52,9 @@ export const PERMISSIONS = Object.freeze({
   TRIP_VIEW: 'trip.view',
   TRIP_MANAGE: 'trip.manage',
   TRIP_RECALCULATE: 'trip.recalculate',
+  // Bulk import (Phase 6)
+  TRIP_IMPORT: 'trip.import',
+  IMPORT_VIEW: 'import.view',
 });
 
 const { ADMIN, BILLER, AUDITOR } = ROLES;
@@ -118,4 +121,12 @@ export const PERMISSION_DEFINITIONS = [
     'Re-resolve a trip rate and recalculate earnings (audited)',
     [ADMIN],
   ],
+
+  [
+    P.TRIP_IMPORT,
+    'Trips',
+    'Upload, map, validate and confirm trip imports; manage templates',
+    [ADMIN, BILLER],
+  ],
+  [P.IMPORT_VIEW, 'Trips', 'View import history and validation results', [ADMIN, BILLER, AUDITOR]],
 ].map(([code, module, description, roles]) => ({ code, module, description, roles }));

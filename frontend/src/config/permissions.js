@@ -16,6 +16,8 @@ export const PERMISSIONS = Object.freeze({
   TRIP_VIEW: 'trip.view',
   TRIP_MANAGE: 'trip.manage',
   TRIP_RECALCULATE: 'trip.recalculate',
+  TRIP_IMPORT: 'trip.import',
+  IMPORT_VIEW: 'import.view',
 });
 
 export const ROLES = Object.freeze({ ADMIN: 'ADMIN', BILLER: 'BILLER', AUDITOR: 'AUDITOR' });

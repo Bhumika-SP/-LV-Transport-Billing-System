@@ -16,6 +16,14 @@ const STATUS_TONES = {
   CURRENT: 'blue',
   UPCOMING: 'amber',
   ENDED: 'gray',
+  VALIDATED: 'blue',
+  IMPORTED: 'green',
+  DISCARDED: 'gray',
+  FAILED: 'red',
+  VALID: 'green',
+  WARNING: 'amber',
+  ERROR: 'red',
+  DUPLICATE: 'gray',
 };
 
 export default function Badge({ tone = 'gray', children }) {

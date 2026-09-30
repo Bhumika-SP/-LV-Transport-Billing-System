@@ -109,6 +109,9 @@ model User {
   tripsCreated               Trip[]              @relation("TripCreatedBy")
   tripsUpdated               Trip[]              @relation("TripUpdatedBy")
   tripsCancelled             Trip[]              @relation("TripCancelledBy")
+  importTemplatesCreated     ImportTemplate[]    @relation("ImportTemplateCreatedBy")
+  importsUploaded            TripImport[]        @relation("ImportUploadedBy")
+  importsImported            TripImport[]        @relation("ImportImportedBy")
 
   @@index([roleId])
   @@index([status])
@@ -183,6 +186,8 @@ model Company {
   vehicleAssignments VehicleAssignment[]
   settlements        CompanySettlement[]
   trips              Trip[]
+  importTemplates    ImportTemplate[]
+  tripImports        TripImport[]
 
   @@index([status])
   @@map("companies")
@@ -455,6 +460,7 @@ model Trip {
   createdBy   User?           @relation("TripCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   updatedBy   User?           @relation("TripUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
   cancelledBy User?           @relation("TripCancelledBy", fields: [cancelledById], references: [id], onDelete: SetNull)
+  import      TripImport?     @relation(fields: [importId], references: [id], onDelete: Restrict)
 
   @@unique([companyId, externalTripId])
   @@index([companyId, tripDate])
@@ -466,4 +472,128 @@ model Trip {
   @@index([rateId])
   @@index([importId])
   @@map("trips")
+}
+
+// ============================================================
+// Phase 6 — Bulk trip import
+// ============================================================
+
+enum DriverMatchField {
+  CODE
+  LICENSE
+  PHONE
+  NAME
+}
+
+enum ImportStatus {
+  VALIDATED
+  IMPORTED
+  DISCARDED
+  FAILED
+}
+
+enum ImportRowStatus {
+  VALID
+  WARNING
+  ERROR
+  DUPLICATE
+  IMPORTED
+}
+
+/// Company-specific, reusable import template (spec §39). Nothing about a company's
+/// file layout is hard-coded: headers, date format, KM method, driver matching and the
+/// duplicate key are all configured here.
+model ImportTemplate {
+  id               Int              @id @default(autoincrement())
+  companyId        Int              @map("company_id")
+  name             String           @db.VarChar(100)
+  /// One of the supported date patterns, e.g. "DD/MM/YYYY".
+  dateFormat       String           @map("date_format") @db.VarChar(20)
+  kmMode           KmSource         @map("km_mode")
+  driverMatchField DriverMatchField @default(CODE) @map("driver_match_field")
+  /// Ordered field names forming the duplicate key, e.g. ["externalTripId"].
+  duplicateKey     Json             @map("duplicate_key")
+  /// Keep unmapped columns in trips.extra.
+  keepUnmapped     Boolean          @default(true) @map("keep_unmapped")
+  status           RecordStatus     @default(ACTIVE)
+  createdById      Int?             @map("created_by_id")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  company   Company                 @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  createdBy User?                   @relation("ImportTemplateCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  mappings  ImportTemplateMapping[]
+  imports   TripImport[]
+
+  @@unique([companyId, name])
+  @@map("import_templates")
+}
+
+/// Source column header → system field.
+model ImportTemplateMapping {
+  id           Int    @id @default(autoincrement())
+  templateId   Int    @map("template_id")
+  sourceColumn String @map("source_column") @db.VarChar(150)
+  targetField  String @map("target_field") @db.VarChar(40)
+
+  template ImportTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@unique([templateId, targetField])
+  @@map("import_template_mappings")
+}
+
+/// One uploaded file (import batch) and its outcome (spec §42).
+model TripImport {
+  id               Int          @id @default(autoincrement())
+  companyId        Int          @map("company_id")
+  templateId       Int?         @map("template_id")
+  fileName         String       @map("file_name") @db.VarChar(255)
+  fileSize         Int          @map("file_size")
+  fileHash         String       @map("file_hash") @db.Char(64)
+  /// Template settings and mappings as used for this batch.
+  templateSnapshot Json         @map("template_snapshot")
+  status           ImportStatus @default(VALIDATED)
+  totalRows        Int          @default(0) @map("total_rows")
+  validRows        Int          @default(0) @map("valid_rows")
+  warningRows      Int          @default(0) @map("warning_rows")
+  errorRows        Int          @default(0) @map("error_rows")
+  duplicateRows    Int          @default(0) @map("duplicate_rows")
+  importedRows     Int          @default(0) @map("imported_rows")
+  errorDetails     String?      @map("error_details") @db.Text
+  uploadedById     Int?         @map("uploaded_by_id")
+  importedById     Int?         @map("imported_by_id")
+  importedAt       DateTime?    @map("imported_at")
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
+
+  company    Company         @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  template   ImportTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  uploadedBy User?           @relation("ImportUploadedBy", fields: [uploadedById], references: [id], onDelete: SetNull)
+  importedBy User?           @relation("ImportImportedBy", fields: [importedById], references: [id], onDelete: SetNull)
+  rows       ImportRow[]
+  trips      Trip[]
+
+  @@index([companyId, createdAt])
+  @@index([status])
+  @@index([fileHash])
+  @@map("trip_imports")
+}
+
+/// Every source row with its raw values, normalized values, status and messages.
+model ImportRow {
+  id         Int             @id @default(autoincrement())
+  importId   Int             @map("import_id")
+  rowNumber  Int             @map("row_number")
+  raw        Json
+  normalized Json?
+  status     ImportRowStatus
+  /// [{ level: "error"|"warning"|"duplicate", field?, message }]
+  messages   Json
+  tripId     Int?            @map("trip_id")
+
+  import TripImport @relation(fields: [importId], references: [id], onDelete: Cascade)
+
+  @@unique([importId, rowNumber])
+  @@index([importId, status])
+  @@map("import_rows")
 }

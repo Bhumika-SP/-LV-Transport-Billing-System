@@ -77,7 +77,7 @@ export const NAV_SECTIONS = [
         permission: P.MASTER_VIEW,
       },
       { label: 'Trips', path: '/trips', icon: Route, phase: 5, permission: P.TRIP_VIEW },
-      { label: 'Bulk Import', path: '/imports', icon: Upload, phase: 6, roles: ALL },
+      { label: 'Bulk Import', path: '/imports', icon: Upload, phase: 6, permission: P.IMPORT_VIEW },
     ],
   },
   {
