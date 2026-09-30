@@ -7,7 +7,7 @@
 //     always interpreted as an Asia/Kolkata calendar date.
 //   * Settlement months -> String @db.Char(7) in "YYYY-MM" format.
 //
-// Models are added phase by phase according to docs/ERD.md.
+// Models are added phase by phase according to docs/DATABASE.md.
 
 generator client {
   provider = "prisma-client-js"

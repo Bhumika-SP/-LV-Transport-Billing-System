@@ -1,7 +1,32 @@
-# LV Transport Billing System — Entity Relationship Design
+# Database
 
-This is the target data model for V1. Tables are **migrated phase by phase**; the
-"Phase" column shows when each table is introduced. Conventions are in
+MySQL 8 (`utf8mb4` / `utf8mb4_unicode_ci`) managed through Prisma 6 migrations.
+
+## Operations
+
+| Task                          | Command                                                     |
+| ----------------------------- | ----------------------------------------------------------- |
+| Create/apply migrations (dev) | `npm run db:migrate` (`prisma migrate dev --name <change>`) |
+| Apply migrations (production) | `npm run db:deploy -w backend` (`prisma migrate deploy`)    |
+| Migration status              | `npm run db:status -w backend`                              |
+| Browse data                   | `npm run db:studio`                                         |
+
+- Local database: `lv_billing` on `localhost:3306`. The connection string lives in
+  `backend/.env` (git-ignored).
+- Migrations live in `backend/prisma/migrations/` and are committed. Never edit an
+  applied migration; add a new one.
+- `prisma migrate dev` needs rights to create a temporary shadow database.
+
+## Migration log
+
+| Migration             | Phase | Tables     |
+| --------------------- | ----- | ---------- |
+| `20260930172127_init` | 0     | `settings` |
+
+## Entity relationship design
+
+This is the target data model for V1. Tables are **migrated phase by phase**, and the
+tables below are grouped by the phase that introduces them. Conventions are in
 [ARCHITECTURE.md](ARCHITECTURE.md#data-conventions).
 
 Global conventions for every table:
@@ -12,7 +37,7 @@ Global conventions for every table:
 - Settlement months are `CHAR(7)` `YYYY-MM`. Business dates are `DATE` (Asia/Kolkata calendar date).
 - Financial records are never hard-deleted: they are voided/reversed with a reason.
 
-## Relationship overview
+### Relationship overview
 
 ```mermaid
 erDiagram
@@ -60,9 +85,9 @@ erDiagram
   tax_rate_configs ||--o{ gst_records : ""
 ```
 
-## Tables
+### Tables
 
-### Identity & access (Phase 2)
+#### Identity & access (Phase 2)
 
 | Table              | Key columns                                                           | Notes                                                                                             |
 | ------------------ | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
@@ -71,7 +96,7 @@ erDiagram
 | `role_permissions` | PK(`role_id`,`permission_id`)                                         | Seeded matrix from spec §7–9. "Roles" screen is read-only in V1.                                  |
 | `users`            | `email` UNIQUE, `password_hash`, `role_id`, `status`, `last_login_at` | One role per user, so no `user_roles` table. Role changes are audited (role history = audit log). |
 
-### Master data (Phase 3)
+#### Master data (Phase 3)
 
 | Table                 | Key columns                                                                                                                                                         | Notes                                                                                      |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
@@ -88,13 +113,13 @@ A company's drivers = drivers whose driver-assignment overlaps a vehicle-assignm
 that company. Trips always store company, driver and vehicle directly, so reporting
 never depends on reconstructing assignments.
 
-### Company settlement (Phase 4)
+#### Company settlement (Phase 4)
 
 | Table                 | Key columns                                                                                                                                                                  | Notes                                                                              |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
 | `company_settlements` | `company_id`, `settlement_month`, `expected_amount`, `received_amount` NULL, `status` (`PENDING`/`RECEIVED`), `received_date`, `payment_method`, `reference_number`, `notes` | **UNIQUE(`company_id`,`settlement_month`)**. Both expected and received preserved. |
 
-### Trips & import (Phases 5–6)
+#### Trips & import (Phases 5–6)
 
 | Table                      | Key columns                                                                                                                                                                                                                                                                                                                                                                                | Notes                                                                                                                                                                          |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -104,7 +129,7 @@ never depends on reconstructing assignments.
 | `trip_imports`             | `company_id`, `template_id`, `file_name`, `document_id`, counts (total/valid/warning/error/duplicate/imported), `status`, `error_summary`                                                                                                                                                                                                                                                  | Import batch history.                                                                                                                                                          |
 | `import_rows`              | `import_id`, `row_number`, `raw` JSON, `normalized` JSON, `status` (`VALID`/`WARNING`/`ERROR`/`DUPLICATE`), `messages` JSON, `trip_id` NULL                                                                                                                                                                                                                                                | Drives preview and the downloadable error report.                                                                                                                              |
 
-### Driver financial transactions (Phases 7–8)
+#### Driver financial transactions (Phases 7–8)
 
 All carry `driver_id`, `settlement_month`, `amount`, `created_by_id`, `status`
 (`ACTIVE`/`VOID`), and `driver_settlement_id` NULL, which is set when a settlement
@@ -118,7 +143,7 @@ locks them. Locked rows cannot be edited or voided.
 | `driver_advances`    | `amount`, `advance_date`, `reason`, `payment_method`, `reference_number`, `recovered_amount`, `outstanding_amount`, `status` (`OPEN`/`RECOVERED`/`VOID`) | Recovered and outstanding amounts are maintained transactionally with a row lock.                                                                                                                                                                            |
 | `advance_recoveries` | `advance_id`, `driver_settlement_id` NULL, `settlement_month`, `amount`                                                                                  | Partial recovery; sum ≤ advance amount (service-enforced under a lock).                                                                                                                                                                                      |
 
-### Driver settlement & payments (Phases 9–10)
+#### Driver settlement & payments (Phases 9–10)
 
 | Table                                   | Key columns                                                                                                                                                                                                                                                                                                                                                                                                                                           | Notes                                                                                                           |
 | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
@@ -128,7 +153,7 @@ locks them. Locked rows cannot be edited or voided.
 | `driver_settlement_company_allocations` | `driver_settlement_id`, `company_id`, `amount`                                                                                                                                                                                                                                                                                                                                                                                                        | Splits a finalized settlement across companies for company-wise profit. **Open question**, see ARCHITECTURE.md. |
 | `driver_payments`                       | `driver_settlement_id`, `driver_id`, `amount`, `payment_date`, `payment_method`, `reference_number`, `notes`, `status` (`VALID`/`REVERSED`), `reversal_reason`                                                                                                                                                                                                                                                                                        | Immutable once recorded; corrected only by reversal.                                                            |
 
-### Tax, documents, notifications, audit (Phases 14–16)
+#### Tax, documents, notifications, audit (Phases 14–16)
 
 | Table              | Key columns                                                                                                                                                                                                                            | Notes                                                                                                     |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
@@ -138,7 +163,7 @@ locks them. Locked rows cannot be edited or voided.
 | `notifications`    | `user_id`, `type`, `title`, `message`, `entity_type`, `entity_id`, `read_at`                                                                                                                                                           | In-app. A future `notification_deliveries` table adds email/SMS/WhatsApp channels.                        |
 | `audit_logs`       | `user_id`, `action`, `entity_type`, `entity_id`, `previous_value` JSON, `new_value` JSON, `reason`, `ip`, `user_agent`, `request_id`, `created_at`                                                                                     | Append-only: no update/delete API. In production the DB user is granted INSERT/SELECT only on this table. |
 
-## Rate history rules
+### Rate history rules
 
 1. Rates are never updated in place once any trip references them.
 2. A new rate for a vehicle type must not overlap an existing active rate. MySQL has
@@ -150,7 +175,7 @@ locks them. Locked rows cannot be edited or voided.
    Zero matches means a validation error ("No rate for Sedan on 2026-09-14"). More than
    one match cannot happen because of rule 2.
 
-## Constraints summary (spec §58)
+### Constraints summary (spec §58)
 
 | Rule                                  | Enforcement                                |
 | ------------------------------------- | ------------------------------------------ |

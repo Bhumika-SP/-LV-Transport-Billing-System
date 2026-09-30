@@ -13,7 +13,7 @@ LV PROFIT = ACTUAL COMPANY AMOUNT RECEIVED − TOTAL FINALIZED DRIVER SETTLEMENT
 ```
 backend/    Express 5 REST API, Prisma (MySQL)
 frontend/   React + Vite + Tailwind SPA
-docs/       Architecture decisions, ERD, assumptions
+docs/       Architecture, database/ERD, API, business rules, deployment
 ```
 
 ## Prerequisites
@@ -23,7 +23,8 @@ docs/       Architecture decisions, ERD, assumptions
 
 ## Local setup
 
-1. **Create the database and an app user.** Run this in the MySQL client as root:
+1. **Create the database.** In development you may use your local root account in
+   `DATABASE_URL`. A dedicated user is shown below and is required in production:
 
    ```sql
    CREATE DATABASE lv_billing CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -74,27 +75,39 @@ docs/       Architecture decisions, ERD, assumptions
 - **Web (Vercel):** root `frontend`, build `npm run build`, output `dist`. Set the Render URL in `frontend/vercel.json` rewrites.
 - **DB:** managed MySQL 8 with automated backups.
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for details.
+Full guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+
+## Documentation
+
+| Document                                    | Contents                                                                      |
+| ------------------------------------------- | ----------------------------------------------------------------------------- |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md)     | Stack, layering, money and date conventions, security, documented assumptions |
+| [DATABASE.md](docs/DATABASE.md)             | Migrations, full ERD, constraints, rate-history rules                         |
+| [API.md](docs/API.md)                       | Response envelope, error codes, endpoints                                     |
+| [BUSINESS_RULES.md](docs/BUSINESS_RULES.md) | Locked formulas, workflow rules, acceptance scenarios                         |
+| [DEPLOYMENT.md](docs/DEPLOYMENT.md)         | Vercel, Render, managed MySQL, storage, backups                               |
 
 ## Build phases
 
-| Phase | Scope                                                                 | Status |
-| ----- | --------------------------------------------------------------------- | ------ |
-| 0     | Project initialization                                                | ✅     |
-| 1     | Foundation (skeleton, health, error handling, logging)                | ✅     |
-| 2     | Authentication & RBAC                                                 | ⏳     |
-| 3     | Master data (companies, drivers, vehicles, types, rates, assignments) |        |
-| 4     | Company settlement                                                    |        |
-| 5     | Trips                                                                 |        |
-| 6     | Bulk import                                                           |        |
-| 7     | Driver earnings                                                       |        |
-| 8     | Expenses & advances                                                   |        |
-| 9     | Driver settlement engine                                              |        |
-| 10    | Driver payments                                                       |        |
-| 11    | LV profit                                                             |        |
-| 12    | Dashboards                                                            |        |
-| 13    | Reports                                                               |        |
-| 14    | GST / finance                                                         |        |
-| 15    | Documents & notifications                                             |        |
-| 16    | Audit                                                                 |        |
-| 17    | Testing                                                               |        |
+| Phase | Scope                                                                 | Status                                   |
+| ----- | --------------------------------------------------------------------- | ---------------------------------------- |
+| 0     | Project initialization                                                | ✅ Complete                              |
+| 1     | Foundation (skeleton, health, error handling, logging)                | 🟡 Code present, awaiting phase sign-off |
+| 2     | Authentication & RBAC                                                 |                                          |
+| 3     | Master data (companies, drivers, vehicles, types, rates, assignments) |                                          |
+| 4     | Company settlement                                                    |                                          |
+| 5     | Trips                                                                 |                                          |
+| 6     | Bulk import                                                           |                                          |
+| 7     | Driver earnings                                                       |                                          |
+| 8     | Expenses & advances                                                   |                                          |
+| 9     | Driver settlement engine                                              |                                          |
+| 10    | Driver payments                                                       |                                          |
+| 11    | LV profit                                                             |                                          |
+| 12    | Dashboards                                                            |                                          |
+| 13    | Reports                                                               |                                          |
+| 14    | GST / finance                                                         |                                          |
+| 15    | Documents & notifications                                             |                                          |
+| 16    | Audit                                                                 |                                          |
+| 17    | Testing                                                               |                                          |
+| 18    | Production hardening                                                  |                                          |
+| 19    | Deployment                                                            |                                          |
