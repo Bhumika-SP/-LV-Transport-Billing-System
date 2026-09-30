@@ -303,27 +303,49 @@ settlements count. Pending and unfinalized amounts are returned separately for c
 | `expenses`        | driver_finance.view     | This month LV-paid by category, driver-paid, entries                                 |
 | `documentAlerts`  | master.view             | Licence, insurance, fitness and permit expiring within 30 days or expired            |
 | `auditAlerts`     | audit.view              | Failed logins (24 h), reopens and payment reversals (30 days)                        |
+| `gst`             | gst.view                | Previous tax period: outward value, output tax, ITC, reverse charge, indicative net  |
 
 ### Reports & exports — `/api/reports` (Phase 13)
 
-| Method | Path                       | Notes                                                              |
-| ------ | -------------------------- | ------------------------------------------------------------------ |
-| GET    | `/reports`                 | Reports the caller may run: `{ key, title, filters[], columns[] }` |
-| GET    | `/reports/:key?format=json | csv                                                                | xlsx | pdf&<filters>` | Same data, filters and **permission** for screen and export. JSON: `{ columns, rows, totals, rowCount, filters, generatedAt }`. Exports are audited (`EXPORT`) |
+| Method | Path                                                  | Notes                                                                                                                                                          |
+| ------ | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/reports`                                            | Reports the caller may run: `{ key, title, filters[], columns[] }`                                                                                             |
+| GET    | `/reports/:key?format=json\|csv\|xlsx\|pdf&<filters>` | Same data, filters and **permission** for screen and export. JSON: `{ columns, rows, totals, rowCount, filters, generatedAt }`. Exports are audited (`EXPORT`) |
 
-| Key                                                          | Permission              | Filters                                                         |
-| ------------------------------------------------------------ | ----------------------- | --------------------------------------------------------------- |
-| `trips`                                                      | trip.view               | month, fromDate, toDate, companyId, driverId, vehicleId, status |
-| `driver-earnings`                                            | driver_finance.view     | month, fromMonth, toMonth, driverId                             |
-| `driver-settlements`, `driver-reconciliation`                | settlement.view         | month, fromMonth, toMonth, driverId (status)                    |
-| `payment-outstanding`, `driver-payments`                     | payment.view            | month/dates, driverId (status)                                  |
-| `expenses`                                                   | driver_finance.view     | month, dates, driverId, vehicleId, paidBy, category, status     |
-| `advances`, `deductions`                                     | driver_finance.view     | dates/month, driverId (status)                                  |
-| `company-settlements`                                        | company_settlement.view | month range, companyId, status                                  |
-| `company-reconciliation`, `company-profit`, `monthly-profit` | profit.view             | month range, companyId                                          |
-| `imports`                                                    | import.view             | dates, companyId, status                                        |
+| Key                                                                                                       | Permission              | Filters                                                         |
+| --------------------------------------------------------------------------------------------------------- | ----------------------- | --------------------------------------------------------------- |
+| `trips`                                                                                                   | trip.view               | month, fromDate, toDate, companyId, driverId, vehicleId, status |
+| `driver-earnings`                                                                                         | driver_finance.view     | month, fromMonth, toMonth, driverId                             |
+| `driver-settlements`, `driver-reconciliation`                                                             | settlement.view         | month, fromMonth, toMonth, driverId (status)                    |
+| `payment-outstanding`, `driver-payments`                                                                  | payment.view            | month/dates, driverId (status)                                  |
+| `expenses`                                                                                                | driver_finance.view     | month, dates, driverId, vehicleId, paidBy, category, status     |
+| `advances`, `deductions`                                                                                  | driver_finance.view     | dates/month, driverId (status)                                  |
+| `company-settlements`                                                                                     | company_settlement.view | month range, companyId, status                                  |
+| `company-reconciliation`, `company-profit`, `monthly-profit`                                              | profit.view             | month range, companyId                                          |
+| `imports`                                                                                                 | import.view             | dates, companyId, status                                        |
+| `gst-invoice-register`, `gst-gstr1-b2b`, `gst-purchase-register`, `gst-hsn-summary`, `gst-reconciliation` | gst.view                | month (tax period), fromMonth, toMonth, companyId               |
 
 Formats: **CSV** (raw numbers, UTF-8 BOM, totals row, formula-injection safe), **Excel** (numeric money cells with Indian grouping, filters and author header) and **PDF** (landscape table; amounts in "Rs" because the built-in PDF fonts have no ₹ glyph). Up to 50,000 rows per report.
+
+### GST — `/api/gst` (Phase 14, reporting/preparation only)
+
+Nothing is filed with the GST portal. Rates are data (`tax_rate_configs`), never code.
+
+| Method | Path                    | Permission        | Notes                                                                                                                                                                                                                                                                                                     |
+| ------ | ----------------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/gst/tax-rates`        | gst.view          | `?includeInactive=true`                                                                                                                                                                                                                                                                                   |
+| POST   | `/gst/tax-rates`        | tax_config.manage | `{ hsnSac, description, gstRate, cessRate?, effectiveFrom, effectiveTo? }` (Admin only)                                                                                                                                                                                                                   |
+| PATCH  | `/gst/tax-rates/:id`    | tax_config.manage | Partial; `status` ACTIVE/INACTIVE                                                                                                                                                                                                                                                                         |
+| GET    | `/gst/records`          | gst.view          | Filters: direction, companyId, status, hsnSac, taxPeriod, fromPeriod, toPeriod, search; paginated                                                                                                                                                                                                         |
+| POST   | `/gst/records/preview`  | gst.manage        | Same body as create; returns computed CGST/SGST/IGST/cess/invoice value, saves nothing                                                                                                                                                                                                                    |
+| POST   | `/gst/records`          | gst.manage        | `{ direction, companyId?, counterpartyName, counterpartyGstin?, invoiceNumber, invoiceDate, taxPeriod?, hsnSac, taxableValue, taxRate, cessRate?, supplyType, placeOfSupply, reverseCharge?, taxRateConfigId?, notes? }`. Tax computed on the server. 409 on duplicate (direction, GSTIN, invoice number) |
+| GET    | `/gst/records/:id`      | gst.view          |                                                                                                                                                                                                                                                                                                           |
+| POST   | `/gst/records/:id/void` | gst.manage        | `{ reason }`. Void records stay in history and are excluded from every report                                                                                                                                                                                                                             |
+| GET    | `/gst/summary`          | gst.view          | Outward, inward (ITC), reverse charge, indicative `netTaxPayable = output + RCM − ITC`                                                                                                                                                                                                                    |
+| GET    | `/gst/gstr1`            | gst.view          | `{ b2b[], b2c[] (by place of supply and rate), hsn[] }`                                                                                                                                                                                                                                                   |
+| GET    | `/gst/gstr3b`           | gst.view          | Table 3.1(a), 3.1(d), 4(A)(5) supporting figures                                                                                                                                                                                                                                                          |
+| GET    | `/gst/hsn-summary`      | gst.view          | Grouped by HSN/SAC                                                                                                                                                                                                                                                                                        |
+| GET    | `/gst/reconciliation`   | gst.view          | Per company and period: amount received (company settlements) vs invoiced value, difference                                                                                                                                                                                                               |
 
 ### Planned modules (spec §61)
 

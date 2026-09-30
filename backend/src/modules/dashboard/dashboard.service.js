@@ -3,6 +3,7 @@ import { prisma } from '../../lib/prisma.js';
 import { addDays, parseDateOnly, todayInBusinessTz } from '../../utils/dates.js';
 import { Decimal } from '../../utils/money.js';
 import { summarizeCompanySettlements } from '../company-settlements/company-settlements.service.js';
+import { gstSummary } from '../gst/gst.service.js';
 import { monthlyProfit } from '../profit/profit.service.js';
 
 /**
@@ -220,6 +221,20 @@ async function auditAlerts() {
   };
 }
 
+/** GST figures for the period most recently closed (returns are prepared for it). */
+async function gst(prev) {
+  const s = await gstSummary({ taxPeriod: prev });
+  return {
+    taxPeriod: prev,
+    outwardCount: s.outward.count,
+    outwardTaxable: s.outward.taxableValue,
+    outputTax: s.outward.totalTax,
+    inputTaxCredit: s.inward.totalTax,
+    reverseChargeTax: s.reverseCharge.totalTax,
+    netTaxPayable: s.netTaxPayable,
+  };
+}
+
 export async function getDashboard(user) {
   const can = (code) => user.permissions.includes(code);
   const today = todayInBusinessTz();
@@ -236,6 +251,7 @@ export async function getDashboard(user) {
     expenses: can(P.DRIVER_FINANCE_VIEW) && expenses(month),
     documentAlerts: can(P.MASTER_VIEW) && documentAlerts(today),
     auditAlerts: can(P.AUDIT_VIEW) && auditAlerts(),
+    gst: can(P.GST_VIEW) && gst(prev),
   };
   const keys = Object.keys(sections).filter((k) => sections[k]);
   const values = await Promise.all(keys.map((k) => sections[k]));

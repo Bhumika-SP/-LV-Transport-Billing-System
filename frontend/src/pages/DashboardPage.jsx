@@ -279,6 +279,28 @@ export function FinanceSections({ d }) {
   );
 }
 
+function GstSection({ g }) {
+  if (!g) return null;
+  return (
+    <Section title={`GST (preparation) · ${formatMonth(g.taxPeriod)}`} to="/gst">
+      <div className={grid}>
+        <Stat
+          label="Outward taxable value"
+          value={formatINR(g.outwardTaxable)}
+          hint={`${n(g.outwardCount)} invoice(s)`}
+        />
+        <Stat label="Output tax" value={formatINR(g.outputTax)} />
+        <Stat
+          label="Input tax credit"
+          value={formatINR(g.inputTaxCredit)}
+          hint={`Reverse charge ${formatINR(g.reverseChargeTax)}`}
+        />
+        <Stat label="Indicative net payable" value={formatINR(g.netTaxPayable)} tone="warning" />
+      </div>
+    </Section>
+  );
+}
+
 function AuditAlerts({ a }) {
   if (!a || !(a.failedLoginsLast24h || a.reopensLast30Days || a.paymentReversalsLast30Days))
     return null;
@@ -354,6 +376,7 @@ export default function DashboardPage() {
           {operations}
         </>
       )}
+      <GstSection g={d.gst} />
       <AuditAlerts a={d.auditAlerts} />
     </>
   );

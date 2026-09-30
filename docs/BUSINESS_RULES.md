@@ -156,6 +156,18 @@ OUTSTANDING = FINAL SETTLEMENT − TOTAL VALID PAYMENTS
 - `DECIMAL(15,2)` for money. JavaScript floating point is never used for money. The UI shows INR as `₹25,00,000.00`.
 - Business timezone is Asia/Kolkata. Months are `YYYY-MM` and are deterministic whatever the browser timezone.
 
+## R12. GST (Phase 14) — reporting and preparation only
+
+- The system prepares GST figures; it never files returns. Every GST screen carries this disclaimer.
+- GST and cess rates come from Admin-maintained `tax_rate_configs` (HSN/SAC, effective dates). No rate is hard-coded.
+- Tax is computed on the server: intra-state supply → CGST = SGST = rate ÷ 2; inter-state → IGST = rate. Cess = taxable × cess rate. Each head is rounded to paise (half-up); invoice value = taxable + all heads.
+- The tax period defaults to the invoice month and may be overridden.
+- An invoice is unique per (direction, counterparty GSTIN, invoice number); blank GSTIN means unregistered (B2C).
+- Records are never deleted: voiding (with a reason) keeps them in history and excludes them from every report.
+- Indicative net payable = output tax + reverse-charge tax − input tax credit. ITC eligibility and blocked credits are for the tax professional to judge.
+- The home state (`gst.homeStateCode` setting) is informational; the supply type is chosen per record.
+- Admin and Auditor may view and record GST; only Admin changes tax configuration; Billers have no GST access.
+
 ## Required acceptance scenarios (spec §76–80)
 
 | #   | Scenario                                                                                | Expected                                                        |

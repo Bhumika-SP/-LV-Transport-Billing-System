@@ -130,6 +130,9 @@ model User {
   settlementRevisions        DriverSettlementRevision[] @relation("SettlementReopenedBy")
   paymentsCreated            DriverPayment[]            @relation("PaymentCreatedBy")
   paymentsReversed           DriverPayment[]            @relation("PaymentReversedBy")
+  taxRatesCreated            TaxRateConfig[]            @relation("TaxRateCreatedBy")
+  gstCreated                 GstRecord[]                @relation("GstCreatedBy")
+  gstVoided                  GstRecord[]                @relation("GstVoidedBy")
 
   @@index([roleId])
   @@index([status])
@@ -206,6 +209,7 @@ model Company {
   trips              Trip[]
   importTemplates    ImportTemplate[]
   allocations        DriverSettlementAllocation[]
+  gstRecords         GstRecord[]
   tripImports        TripImport[]
 
   @@index([status])
@@ -1015,4 +1019,91 @@ model DriverSettlementAllocation {
   @@unique([settlementId, companyId])
   @@index([settlementMonth, companyId])
   @@map("driver_settlement_allocations")
+}
+
+// ============================================================
+// Phase 14 — GST / tax (reporting and preparation only)
+// ============================================================
+
+enum GstDirection {
+  OUTWARD
+  INWARD
+}
+
+enum GstSupplyType {
+  INTRA_STATE
+  INTER_STATE
+}
+
+/// Configurable GST rates by HSN/SAC (spec §52: never hard-coded). Effective-dated.
+model TaxRateConfig {
+  id            Int          @id @default(autoincrement())
+  hsnSac        String       @map("hsn_sac") @db.VarChar(10)
+  description   String       @db.VarChar(255)
+  /// Total GST rate in percent (split CGST/SGST for intra-state, IGST inter-state).
+  gstRate       Decimal      @map("gst_rate") @db.Decimal(5, 2)
+  cessRate      Decimal      @default(0) @map("cess_rate") @db.Decimal(5, 2)
+  effectiveFrom DateTime     @map("effective_from") @db.Date
+  effectiveTo   DateTime?    @map("effective_to") @db.Date
+  status        RecordStatus @default(ACTIVE)
+  createdById   Int?         @map("created_by_id")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  createdBy User?       @relation("TaxRateCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  records   GstRecord[]
+
+  @@index([hsnSac, effectiveFrom])
+  @@map("tax_rate_configs")
+}
+
+/// Invoice-level GST record. OUTWARD = LV's tax invoices; INWARD = purchases/expenses.
+/// Tax amounts are computed by gst-calculations.js from taxable value, rate and supply type.
+model GstRecord {
+  id                Int           @id @default(autoincrement())
+  direction         GstDirection
+  companyId         Int?          @map("company_id")
+  counterpartyName  String        @map("counterparty_name") @db.VarChar(150)
+  counterpartyGstin String?       @map("counterparty_gstin") @db.VarChar(15)
+  /// GSTIN or "" — makes (direction, counterpartyKey, invoiceNumber) unique.
+  counterpartyKey   String        @default("") @map("counterparty_key") @db.VarChar(15)
+  invoiceNumber     String        @map("invoice_number") @db.VarChar(50)
+  invoiceDate       DateTime      @map("invoice_date") @db.Date
+  /// "YYYY-MM" return period.
+  taxPeriod         String        @map("tax_period") @db.Char(7)
+  hsnSac            String        @map("hsn_sac") @db.VarChar(10)
+  description       String?       @db.VarChar(255)
+  taxableValue      Decimal       @map("taxable_value") @db.Decimal(15, 2)
+  taxRate           Decimal       @map("tax_rate") @db.Decimal(5, 2)
+  cessRate          Decimal       @default(0) @map("cess_rate") @db.Decimal(5, 2)
+  supplyType        GstSupplyType @map("supply_type")
+  /// 2-digit state code of the place of supply.
+  placeOfSupply     String        @map("place_of_supply") @db.Char(2)
+  reverseCharge     Boolean       @default(false) @map("reverse_charge")
+  cgst              Decimal       @db.Decimal(15, 2)
+  sgst              Decimal       @db.Decimal(15, 2)
+  igst              Decimal       @db.Decimal(15, 2)
+  cess              Decimal       @db.Decimal(15, 2)
+  totalTax          Decimal       @map("total_tax") @db.Decimal(15, 2)
+  invoiceValue      Decimal       @map("invoice_value") @db.Decimal(15, 2)
+  taxRateConfigId   Int?          @map("tax_rate_config_id")
+  notes             String?       @db.Text
+  status            ItemStatus    @default(ACTIVE)
+  voidReason        String?       @map("void_reason") @db.VarChar(500)
+  voidedAt          DateTime?     @map("voided_at")
+  voidedById        Int?          @map("voided_by_id")
+  createdById       Int?          @map("created_by_id")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+
+  company       Company?       @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  taxRateConfig TaxRateConfig? @relation(fields: [taxRateConfigId], references: [id], onDelete: SetNull)
+  createdBy     User?          @relation("GstCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  voidedBy      User?          @relation("GstVoidedBy", fields: [voidedById], references: [id], onDelete: SetNull)
+
+  @@unique([direction, counterpartyKey, invoiceNumber])
+  @@index([taxPeriod, direction, status])
+  @@index([companyId, taxPeriod])
+  @@index([hsnSac])
+  @@map("gst_records")
 }

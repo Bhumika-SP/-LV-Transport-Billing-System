@@ -4,6 +4,13 @@
  * Add new settings here as later phases need them.
  */
 export const SETTING_DEFINITIONS = {
+  'gst.homeStateCode': {
+    type: 'string',
+    default: '',
+    group: 'GST',
+    description:
+      "LV Transport's 2-digit GST state code (used to suggest intra- vs inter-state supply). Leave blank until set.",
+  },
   'profit.allocationMethod': {
     type: 'string',
     default: 'TRIP_EARNINGS',

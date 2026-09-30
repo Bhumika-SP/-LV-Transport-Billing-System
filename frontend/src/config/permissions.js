@@ -33,6 +33,9 @@ export const PERMISSIONS = Object.freeze({
   PAYMENT_RECORD: 'payment.record',
   PAYMENT_REVERSE: 'payment.reverse',
   PROFIT_VIEW: 'profit.view',
+  GST_VIEW: 'gst.view',
+  GST_MANAGE: 'gst.manage',
+  TAX_CONFIG_MANAGE: 'tax_config.manage',
 });
 
 export const ROLES = Object.freeze({ ADMIN: 'ADMIN', BILLER: 'BILLER', AUDITOR: 'AUDITOR' });

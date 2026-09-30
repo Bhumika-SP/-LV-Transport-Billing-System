@@ -74,6 +74,10 @@ export const PERMISSIONS = Object.freeze({
   PAYMENT_REVERSE: 'payment.reverse',
   // LV profit (Phase 11)
   PROFIT_VIEW: 'profit.view',
+  // GST / tax (Phase 14)
+  GST_VIEW: 'gst.view',
+  GST_MANAGE: 'gst.manage',
+  TAX_CONFIG_MANAGE: 'tax_config.manage',
 });
 
 const { ADMIN, BILLER, AUDITOR } = ROLES;
@@ -219,4 +223,7 @@ export const PERMISSION_DEFINITIONS = [
   ],
   [P.PAYMENT_REVERSE, 'Driver payments', 'Reverse a recorded payment (reason required)', [ADMIN]],
   [P.PROFIT_VIEW, 'Profit', 'View LV profit (company-wise, monthly, overall)', [ADMIN, AUDITOR]],
+  [P.GST_VIEW, 'GST / tax', 'View GST records and GST/tax reports', [ADMIN, AUDITOR]],
+  [P.GST_MANAGE, 'GST / tax', 'Record and void GST invoice/purchase records', [ADMIN, AUDITOR]],
+  [P.TAX_CONFIG_MANAGE, 'GST / tax', 'Change tax rate configuration', [ADMIN]],
 ].map(([code, module, description, roles]) => ({ code, module, description, roles }));

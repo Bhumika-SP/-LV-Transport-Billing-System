@@ -86,6 +86,18 @@ export default function SettingsPage() {
                         ))}
                       </select>
                     )}
+                    {s.type === 'string' && !s.options && (
+                      <input
+                        aria-label={s.description}
+                        defaultValue={s.value}
+                        maxLength={20}
+                        className="w-28 rounded-md border border-slate-300 px-2 py-1 text-sm"
+                        onBlur={(e) =>
+                          e.target.value !== s.value &&
+                          mutation.mutate({ key: s.key, value: e.target.value.trim() })
+                        }
+                      />
+                    )}
                     {s.type === 'boolean' && (
                       <Toggle
                         label={s.description}

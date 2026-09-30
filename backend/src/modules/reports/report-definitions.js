@@ -2,6 +2,7 @@ import { PERMISSIONS as P } from '../../config/permissions.js';
 import { prisma } from '../../lib/prisma.js';
 import { parseDateOnly, toDateString, todayInBusinessTz } from '../../utils/dates.js';
 import { grossEarningsBreakdown } from '../earnings/earnings.service.js';
+import { hsnSummary, taxReconciliation } from '../gst/gst.service.js';
 import { companyProfit, monthlyProfit } from '../profit/profit.service.js';
 
 /**
@@ -74,7 +75,116 @@ async function settlementRows(f, extraWhere = {}) {
   }));
 }
 
+const gstPeriod = (f) =>
+  f.month ? { taxPeriod: f.month } : { fromPeriod: f.fromMonth, toPeriod: f.toMonth };
+
+const gstRecordColumns = [
+  { key: 'invoiceDate', label: 'Invoice date', type: 'date' },
+  { key: 'invoiceNumber', label: 'Invoice no.', type: 'text' },
+  { key: 'taxPeriod', label: 'Tax period', type: 'month' },
+  { key: 'direction', label: 'Direction', type: 'text' },
+  { key: 'counterpartyName', label: 'Party', type: 'text' },
+  { key: 'counterpartyGstin', label: 'GSTIN', type: 'text' },
+  { key: 'hsnSac', label: 'HSN/SAC', type: 'text' },
+  { key: 'placeOfSupply', label: 'POS', type: 'text' },
+  { key: 'reverseCharge', label: 'RCM', type: 'text' },
+  { key: 'taxableValue', label: 'Taxable value', type: 'money' },
+  { key: 'taxRate', label: 'Rate %', type: 'number' },
+  { key: 'cgst', label: 'CGST', type: 'money' },
+  { key: 'sgst', label: 'SGST', type: 'money' },
+  { key: 'igst', label: 'IGST', type: 'money' },
+  { key: 'cess', label: 'Cess', type: 'money' },
+  { key: 'invoiceValue', label: 'Invoice value', type: 'money' },
+];
+const gstTotals = ['taxableValue', 'cgst', 'sgst', 'igst', 'cess', 'invoiceValue'];
+
+async function gstRecordRows(f, extra = {}) {
+  const p = gstPeriod(f);
+  const rows = await prisma.gstRecord.findMany({
+    where: {
+      status: 'ACTIVE',
+      ...(p.taxPeriod
+        ? { taxPeriod: p.taxPeriod }
+        : (p.fromPeriod || p.toPeriod) && {
+            taxPeriod: {
+              ...(p.fromPeriod && { gte: p.fromPeriod }),
+              ...(p.toPeriod && { lte: p.toPeriod }),
+            },
+          }),
+      ...opt('companyId', f.companyId),
+      ...extra,
+    },
+    orderBy: [{ invoiceDate: 'asc' }, { id: 'asc' }],
+    take: MAX_REPORT_ROWS,
+  });
+  return rows.map((r) => ({
+    ...r,
+    invoiceDate: d(r.invoiceDate),
+    reverseCharge: r.reverseCharge ? 'Y' : 'N',
+  }));
+}
+
 export const REPORTS = {
+  'gst-invoice-register': {
+    title: 'GST tax invoice register (outward)',
+    permission: P.GST_VIEW,
+    filters: ['month', 'fromMonth', 'toMonth', 'companyId'],
+    columns: gstRecordColumns,
+    totals: gstTotals,
+    rows: (f) => gstRecordRows(f, { direction: 'OUTWARD' }),
+  },
+  'gst-purchase-register': {
+    title: 'GST purchase / expense register (inward)',
+    permission: P.GST_VIEW,
+    filters: ['month', 'fromMonth', 'toMonth'],
+    columns: gstRecordColumns,
+    totals: gstTotals,
+    rows: (f) => gstRecordRows(f, { direction: 'INWARD' }),
+  },
+  'gst-gstr1-b2b': {
+    title: 'GSTR-1 supporting: B2B invoices',
+    permission: P.GST_VIEW,
+    filters: ['month', 'fromMonth', 'toMonth'],
+    columns: gstRecordColumns,
+    totals: gstTotals,
+    rows: (f) => gstRecordRows(f, { direction: 'OUTWARD', counterpartyGstin: { not: null } }),
+  },
+  'gst-hsn-summary': {
+    title: 'GST HSN/SAC summary',
+    permission: P.GST_VIEW,
+    filters: ['month', 'fromMonth', 'toMonth'],
+    columns: [
+      { key: 'direction', label: 'Direction', type: 'text' },
+      { key: 'hsnSac', label: 'HSN/SAC', type: 'text' },
+      { key: 'taxRate', label: 'Rate %', type: 'number' },
+      { key: 'count', label: 'Invoices', type: 'number' },
+      { key: 'taxableValue', label: 'Taxable value', type: 'money' },
+      { key: 'cgst', label: 'CGST', type: 'money' },
+      { key: 'sgst', label: 'SGST', type: 'money' },
+      { key: 'igst', label: 'IGST', type: 'money' },
+      { key: 'cess', label: 'Cess', type: 'money' },
+      { key: 'totalTax', label: 'Total tax', type: 'money' },
+    ],
+    totals: ['taxableValue', 'cgst', 'sgst', 'igst', 'cess', 'totalTax'],
+    rows: (f) => hsnSummary(gstPeriod(f)),
+  },
+  'gst-reconciliation': {
+    title: 'Tax reconciliation (received vs invoiced)',
+    permission: P.GST_VIEW,
+    filters: ['month', 'fromMonth', 'toMonth', 'companyId'],
+    columns: [
+      { key: 'taxPeriod', label: 'Period', type: 'month' },
+      { key: 'company', label: 'Company', type: 'text' },
+      { key: 'receivedAmount', label: 'Amount received', type: 'money' },
+      { key: 'taxableValue', label: 'Invoiced taxable', type: 'money' },
+      { key: 'totalTax', label: 'Invoiced tax', type: 'money' },
+      { key: 'invoiceValue', label: 'Invoice value', type: 'money' },
+      { key: 'difference', label: 'Received − invoiced', type: 'money' },
+    ],
+    totals: ['receivedAmount', 'taxableValue', 'totalTax', 'invoiceValue', 'difference'],
+    rows: (f) => taxReconciliation({ ...gstPeriod(f), companyId: f.companyId }),
+  },
+
   trips: {
     title: 'Trip report',
     permission: P.TRIP_VIEW,

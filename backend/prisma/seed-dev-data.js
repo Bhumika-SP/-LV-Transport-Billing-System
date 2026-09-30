@@ -28,6 +28,7 @@ import {
   submitSettlement,
 } from '../src/modules/settlements/settlements.service.js';
 import { recordPayment } from '../src/modules/payments/payments.service.js';
+import { createGstRecord, createTaxRate } from '../src/modules/gst/gst.service.js';
 import { allocateSettlement } from '../src/modules/profit/allocation.service.js';
 import { createTrip } from '../src/modules/trips/trips.service.js';
 import { createVehicleType } from '../src/modules/vehicle-types/vehicle-types.service.js';
@@ -437,6 +438,48 @@ async function backfillAllocations() {
     console.log(`  allocated ${missing.length} finalized settlement(s) to companies`);
 }
 
+/** Illustrative tax rate and GST records. Rates are placeholders an Admin must verify. */
+async function seedGst(actor) {
+  if (await prisma.gstRecord.count()) return;
+  const rate =
+    (await prisma.taxRateConfig.findFirst({ where: { hsnSac: '996601' } })) ??
+    (await createTaxRate(
+      {
+        hsnSac: '996601',
+        description: 'Rental of motor vehicles with operator (verify rate with tax advisor)',
+        gstRate: '5',
+        cessRate: '0',
+        effectiveFrom: '2026-04-01',
+      },
+      actor,
+    ));
+  const companies = await prisma.company.findMany({ orderBy: { id: 'asc' }, take: 2 });
+  let n = 0;
+  for (const c of companies) {
+    n += 1;
+    await createGstRecord(
+      {
+        direction: 'OUTWARD',
+        companyId: c.id,
+        counterpartyName: c.name,
+        counterpartyGstin: c.gstin ?? undefined,
+        invoiceNumber: `LV/26-27/DEV-${n}`,
+        invoiceDate: '2026-08-31',
+        hsnSac: '996601',
+        taxableValue: String(250000 * n),
+        taxRate: '5',
+        cessRate: '0',
+        supplyType: 'INTRA_STATE',
+        placeOfSupply: c.gstin?.slice(0, 2) ?? '29',
+        reverseCharge: false,
+        taxRateConfigId: rate.id,
+      },
+      actor,
+    );
+  }
+  console.log(`  ${n} GST record(s)`);
+}
+
 export async function seedDevelopmentData(actor) {
   console.log('Seeding development data…');
   await seedMasterData(actor);
@@ -447,4 +490,5 @@ export async function seedDevelopmentData(actor) {
   await seedSettlements(actor);
   await seedPayments(actor);
   await backfillAllocations();
+  await seedGst(actor);
 }
