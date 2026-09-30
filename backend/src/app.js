@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
@@ -22,7 +23,11 @@ export function createApp() {
     pinoHttp({
       logger,
       genReqId: (req, res) => {
-        const id = req.headers['x-request-id'] || randomUUID();
+        // Reuse an upstream request ID only if it is short and safe to log and store
+        // (audit_logs.request_id is VARCHAR(64)); otherwise mint a new one.
+        const incoming = req.headers['x-request-id'];
+        const id =
+          typeof incoming === 'string' && /^[\w.-]{1,64}$/.test(incoming) ? incoming : randomUUID();
         res.setHeader('x-request-id', id);
         return id;
       },
@@ -30,6 +35,7 @@ export function createApp() {
     }),
   );
   app.use(helmet());
+  app.use(compression());
   app.use(
     cors({
       origin(origin, cb) {
@@ -45,6 +51,11 @@ export function createApp() {
   app.use(cookieParser());
 
   app.use('/health', healthRoutes);
+  // Financial data must never be stored by browsers or shared caches.
+  app.use('/api', (_req, res, next) => {
+    res.set('Cache-Control', 'no-store');
+    next();
+  });
   app.use('/api', apiRoutes);
 
   app.use(notFound);

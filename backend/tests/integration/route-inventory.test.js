@@ -13,6 +13,28 @@ import { seedBase, TEST_PASSWORD, TEST_USERS } from '../helpers/db.js';
 
 const PUBLIC = new Set(['GET /api/', 'POST /api/auth/login']);
 const ROUTES_DIR = path.resolve('src/routes');
+const guards = new Map();
+
+/**
+ * Routes that are authenticated but deliberately carry no single permission guard,
+ * with the reason. Anything else without requirePermission fails the audit below.
+ */
+const NO_PERMISSION_GUARD = {
+  'POST /api/auth/logout': 'any signed-in user',
+  'GET /api/auth/me': 'any signed-in user (own profile)',
+  'POST /api/auth/change-password': 'any signed-in user (own password)',
+  'GET /api/dashboard/': 'sections filtered per permission in the service',
+  'GET /api/reports/': 'lists only reports the caller may run',
+  'GET /api/reports/:key': 'per-report permission checked in the service',
+  'GET /api/notifications/': 'own notifications only',
+  'GET /api/notifications/unread-count': 'own notifications only',
+  'POST /api/notifications/read-all': 'own notifications only',
+  'POST /api/notifications/:id/read': 'own notifications only',
+  'GET /api/documents/': 'record-type permission checked in the service',
+  'POST /api/documents/': 'record-type permission checked in the service',
+  'GET /api/documents/:id/download': 'record-type permission checked in the service',
+  'DELETE /api/documents/:id': 'record-type permission checked in the service',
+};
 
 async function discoverRoutes() {
   const index = readFileSync(path.join(ROUTES_DIR, 'index.js'), 'utf8');
@@ -28,10 +50,18 @@ async function discoverRoutes() {
   }
   const routes = [];
   const collect = (mount, router) => {
+    // Router-level guards (router.use(requirePermission(...))) apply to every route after them.
+    let routerGuards = [];
     for (const layer of router.stack) {
-      if (!layer.route) continue;
+      if (!layer.route) {
+        routerGuards = [...routerGuards, ...(layer.handle.requiredPermissions ?? [])];
+        continue;
+      }
+      const own = layer.route.stack.flatMap((l) => l.handle.requiredPermissions ?? []);
       for (const method of Object.keys(layer.route.methods)) {
-        routes.push({ method: method.toUpperCase(), path: `/api${mount}${layer.route.path}` });
+        const route = { method: method.toUpperCase(), path: `/api${mount}${layer.route.path}` };
+        guards.set(`${route.method} ${route.path}`, [...routerGuards, ...own]);
+        routes.push(route);
       }
     }
   };
@@ -53,6 +83,15 @@ describe('route inventory', () => {
     expect(routes.length).toBeGreaterThanOrEqual(150);
     expect(routes).toContainEqual({ method: 'POST', path: '/api/settlements/:id/finalize' });
     expect(routes).toContainEqual({ method: 'GET', path: '/api/audit/:id' });
+  });
+
+  it('authorization audit: every route has a permission guard or a documented exception', () => {
+    const unguarded = routes
+      .map((r) => `${r.method} ${r.path}`)
+      .filter((k) => !PUBLIC.has(k) && !guards.get(k).length && !NO_PERMISSION_GUARD[k]);
+    expect(unguarded).toEqual([]);
+    // The exception list must not go stale either.
+    for (const k of Object.keys(NO_PERMISSION_GUARD)) expect(guards.has(k), k).toBe(true);
   });
 
   it('every non-public route rejects anonymous requests with 401', async () => {

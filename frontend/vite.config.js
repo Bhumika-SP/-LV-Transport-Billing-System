@@ -8,6 +8,24 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react(), tailwindcss()],
+    build: {
+      rollupOptions: {
+        output: {
+          // Long-lived vendor chunks: app deploys do not invalidate library caches.
+          manualChunks: {
+            react: ['react', 'react-dom', 'react-router-dom'],
+            data: [
+              '@tanstack/react-query',
+              'axios',
+              'zod',
+              'react-hook-form',
+              '@hookform/resolvers',
+            ],
+            charts: ['recharts'],
+          },
+        },
+      },
+    },
     test: {
       environment: 'node',
       include: ['src/**/*.test.js'],

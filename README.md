@@ -93,14 +93,15 @@ Full guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ## Documentation
 
-| Document                                    | Contents                                                                      |
-| ------------------------------------------- | ----------------------------------------------------------------------------- |
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md)     | Stack, layering, money and date conventions, security, documented assumptions |
-| [DATABASE.md](docs/DATABASE.md)             | Migrations, full ERD, constraints, rate-history rules                         |
-| [API.md](docs/API.md)                       | Response envelope, error codes, endpoints                                     |
-| [BUSINESS_RULES.md](docs/BUSINESS_RULES.md) | Locked formulas, workflow rules, acceptance scenarios                         |
-| [DEPLOYMENT.md](docs/DEPLOYMENT.md)         | Vercel, Render, managed MySQL, storage, backups                               |
-| [TESTING.md](docs/TESTING.md)               | Running tests, the phase gate, coverage map for the spec's test lists         |
+| Document                                    | Contents                                                                         |
+| ------------------------------------------- | -------------------------------------------------------------------------------- |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md)     | Stack, layering, money and date conventions, security, documented assumptions    |
+| [DATABASE.md](docs/DATABASE.md)             | Migrations, full ERD, constraints, rate-history rules                            |
+| [API.md](docs/API.md)                       | Response envelope, error codes, endpoints                                        |
+| [BUSINESS_RULES.md](docs/BUSINESS_RULES.md) | Locked formulas, workflow rules, acceptance scenarios                            |
+| [DEPLOYMENT.md](docs/DEPLOYMENT.md)         | Vercel, Render, managed MySQL, storage, backups                                  |
+| [SECURITY.md](docs/SECURITY.md)             | Security review, authorization audit, backups and restore, dependency advisories |
+| [TESTING.md](docs/TESTING.md)               | Running tests, the phase gate, coverage map for the spec's test lists            |
 
 ## Build phases
 
@@ -124,5 +125,5 @@ Full guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 | 15    | Documents & notifications                                             | ✅ Complete |
 | 16    | Audit                                                                 | ✅ Complete |
 | 17    | Testing                                                               | ✅ Complete |
-| 18    | Production hardening                                                  |             |
+| 18    | Production hardening                                                  | ✅ Complete |
 | 19    | Deployment                                                            |             |

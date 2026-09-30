@@ -5,7 +5,7 @@ const booleanString = z
   .optional()
   .transform((v) => (v === undefined ? undefined : v === 'true'));
 
-const envSchema = z
+export const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     PORT: z.coerce.number().int().positive().default(4000),
@@ -57,6 +57,26 @@ const envSchema = z
     {
       message: 'STORAGE_DRIVER=s3 requires S3_BUCKET, S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY',
       path: ['STORAGE_DRIVER'],
+    },
+  )
+  // Production guards: fail fast on configurations that are unsafe to run with real data.
+  .refine(
+    (e) =>
+      e.NODE_ENV !== 'production' ||
+      e.CORS_ORIGINS.every((o) => o.startsWith('https://') && !/localhost|127\.0\.0\.1/.test(o)),
+    {
+      message: 'In production CORS_ORIGINS must list https:// origins only',
+      path: ['CORS_ORIGINS'],
+    },
+  )
+  .refine(
+    (e) =>
+      e.NODE_ENV !== 'production' ||
+      (!/change|replace|example|secret|placeholder|test/i.test(e.JWT_SECRET) &&
+        new Set(e.JWT_SECRET).size >= 10),
+    {
+      message: 'In production JWT_SECRET must be a random value (e.g. openssl rand -base64 48)',
+      path: ['JWT_SECRET'],
     },
   )
   .refine((e) => e.COOKIE_SAMESITE !== 'none' || e.COOKIE_SECURE, {

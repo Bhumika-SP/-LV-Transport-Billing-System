@@ -29,13 +29,16 @@ export async function authenticate(req, res, next) {
 
 /** Require at least one of the given permission codes (backend RBAC). */
 export function requirePermission(...codes) {
-  return (req, _res, next) => {
+  const middleware = (req, _res, next) => {
     if (!req.user) throw AppError.unauthorized();
     if (!codes.some((c) => req.user.permissions.includes(c))) {
       throw AppError.forbidden();
     }
     next();
   };
+  // Lets the authorization inventory test see which permission guards each route.
+  middleware.requiredPermissions = codes;
+  return middleware;
 }
 
 /** Convenience for services/controllers that need a conditional check. */

@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
+import { LoadingState } from '../ui/States';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 
@@ -12,7 +14,9 @@ export default function AppLayout() {
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">
-          <Outlet />
+          <Suspense fallback={<LoadingState />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>
