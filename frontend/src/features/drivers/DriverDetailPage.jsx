@@ -24,6 +24,7 @@ import {
   POSITIVE_ADJUSTMENTS,
   vehicleColumn,
 } from '../driver-finance/itemConfigs';
+import PaymentsTable from '../payments/PaymentsTable';
 import SettlementTable from '../settlements/SettlementTable';
 import TripTable from '../trips/TripTable';
 import { get } from '../../lib/api';
@@ -227,11 +228,7 @@ export default function DriverDetailPage() {
             ),
           },
           { key: 'settlements', label: 'Settlements', content: <SettlementTable driverId={id} /> },
-          {
-            key: 'payments',
-            label: 'Payments',
-            content: <PhasePlaceholder what="Payments" phase={10} />,
-          },
+          { key: 'payments', label: 'Payments', content: <PaymentsTable driverId={id} /> },
           {
             key: 'documents',
             label: 'Documents',

@@ -17,6 +17,10 @@ const DETAIL_INCLUDE = {
   ...LIST_INCLUDE,
   items: { orderBy: [{ component: 'asc' }, { sourceDate: 'asc' }, { id: 'asc' }] },
   revisions: { orderBy: { version: 'desc' }, include: { reopenedBy: user } },
+  payments: {
+    orderBy: [{ paymentDate: 'asc' }, { id: 'asc' }],
+    include: { createdBy: user, reversedBy: user },
+  },
   createdBy: user,
   calculatedBy: user,
   submittedBy: user,

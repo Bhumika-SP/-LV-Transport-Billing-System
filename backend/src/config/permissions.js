@@ -68,6 +68,10 @@ export const PERMISSIONS = Object.freeze({
   SETTLEMENT_APPROVE: 'settlement.approve',
   SETTLEMENT_FINALIZE: 'settlement.finalize',
   SETTLEMENT_REOPEN: 'settlement.reopen',
+  // Driver payments (Phase 10)
+  PAYMENT_VIEW: 'payment.view',
+  PAYMENT_RECORD: 'payment.record',
+  PAYMENT_REVERSE: 'payment.reverse',
 });
 
 const { ADMIN, BILLER, AUDITOR } = ROLES;
@@ -199,4 +203,17 @@ export const PERMISSION_DEFINITIONS = [
     'Reopen a finalized settlement (mandatory reason)',
     [ADMIN],
   ],
+  [
+    P.PAYMENT_VIEW,
+    'Driver payments',
+    'View driver payments and outstanding amounts',
+    [ADMIN, BILLER, AUDITOR],
+  ],
+  [
+    P.PAYMENT_RECORD,
+    'Driver payments',
+    'Record payments against finalized settlements',
+    [ADMIN, BILLER],
+  ],
+  [P.PAYMENT_REVERSE, 'Driver payments', 'Reverse a recorded payment (reason required)', [ADMIN]],
 ].map(([code, module, description, roles]) => ({ code, module, description, roles }));

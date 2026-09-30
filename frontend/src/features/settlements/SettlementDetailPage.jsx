@@ -24,6 +24,7 @@ import { ErrorState, LoadingState } from '../../components/ui/States';
 import { PERMISSIONS } from '../../config/permissions';
 import { get, post } from '../../lib/api';
 import { formatDate, formatDateTime, formatINR, formatMonth } from '../../lib/format';
+import SettlementPayments from '../payments/SettlementPayments';
 
 /** Component key → the settlement item component codes it aggregates. */
 const COMPONENT_CODES = {
@@ -355,8 +356,9 @@ export default function SettlementDetailPage() {
       )}
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="space-y-4 lg:col-span-2">
           <Calculation s={s} />
+          <SettlementPayments settlement={s} />
         </div>
         <div className="space-y-4">
           <Card title="Payment">

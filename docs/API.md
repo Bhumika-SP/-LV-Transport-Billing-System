@@ -264,6 +264,19 @@ current status on the server (409 `INVALID_SETTLEMENT_TRANSITION`).
 for a driver-month whose settlement is UNDER_REVIEW/APPROVED → 409 `SETTLEMENT_IN_REVIEW`, FINALIZED →
 409 `SETTLEMENT_LOCKED`. A CALCULATED settlement silently returns to DRAFT (recalculation required).
 
+### Driver payments — `/api/payments` (Phase 10)
+
+View `payment.view` (all roles). Record `payment.record` (Admin, Biller). Reverse `payment.reverse` (Admin).
+
+| Method | Path                    | Notes                                                                                                                    |
+| ------ | ----------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| GET    | `/payments`             | Filters `driverId`, `settlementId`, `month` (settlement month), `method`, `status` (VALID/REVERSED), `fromDate`/`toDate` |
+| GET    | `/payments/summary`     | Same filters → `{ count, total, byMethod[] }` over VALID payments                                                        |
+| POST   | `/payments`             | `{ settlementId, amount, paymentDate, paymentMethod: CASH                                                                | BANK_TRANSFER | UPI | CHEQUE, referenceNumber?, notes?, proofReference? }`→`{ payment, settlement }`. Only FINALIZED settlements (409 `SETTLEMENT_NOT_FINALIZED`). Never above outstanding (409 `PAYMENT_EXCEEDS_OUTSTANDING`, also under concurrency). Date not in the future |
+| POST   | `/payments/:id/reverse` | [Admin] `{ reason }`. Payment kept as REVERSED, outstanding restored                                                     |
+
+`GET /settlements/:id` includes `payments[]` and `outstandingAmount`.
+
 ### Planned modules (spec §61)
 
 `/api/auth`, `/api/users`, `/api/companies`, `/api/drivers`, `/api/vehicles`,

@@ -14,6 +14,7 @@ import { DriverExpensesPage, LvExpensesPage } from './features/driver-finance/Ex
 import DriversPage from './features/drivers/DriversPage';
 import ImportBatchPage from './features/imports/ImportBatchPage';
 import ImportsPage from './features/imports/ImportsPage';
+import PaymentsPage from './features/payments/PaymentsPage';
 import RolesPage from './features/roles/RolesPage';
 import SettingsPage from './features/settings/SettingsPage';
 import SettlementDetailPage from './features/settlements/SettlementDetailPage';
@@ -48,6 +49,7 @@ const PAGES = {
   '/lv-expenses': LvExpensesPage,
   '/advances': AdvancesPage,
   '/settlements': SettlementsPage,
+  '/payments': PaymentsPage,
 };
 
 /** Routes that are not nav entries (detail pages). */

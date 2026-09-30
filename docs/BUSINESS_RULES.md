@@ -141,9 +141,12 @@ DRAFT → CALCULATED → UNDER_REVIEW → APPROVED → FINALIZED  (+ payment sta
 OUTSTANDING = FINAL SETTLEMENT − TOTAL VALID PAYMENTS
 ```
 
-- Payment status is `UNPAID`, `PARTIALLY_PAID` or `PAID`. Multiple payments are allowed, and a payment may not exceed the outstanding amount.
-- Methods are **Cash, Bank Transfer, UPI and Cheque only**.
-- Payments are immutable. Corrections are made only by reversal.
+- Settlement and payment are separate. Only **FINALIZED** settlements are payable, and multiple partial payments are allowed.
+- Payment status: `UNPAID` (nothing paid), `PARTIALLY_PAID`, or `PAID` (paid = final). It is kept on the settlement and recomputed from VALID payments.
+- A payment can **never exceed the outstanding amount**. The settlement row is locked, so concurrent payments cannot overpay.
+- Methods are Cash, Bank Transfer, UPI and Cheque only. Each payment records amount, date, method, reference, notes, proof reference, creator and time.
+- Payments are **immutable**. The only correction is an **Admin reversal** with a mandatory reason. The row is kept as REVERSED and the outstanding amount is restored.
+- **Reopened settlements:** existing payments stay linked. No new payments until re-finalized. Re-finalization is refused if the new final amount is below what has already been paid (`PAID_EXCEEDS_FINAL`); reverse the excess first.
 
 ## R11. Money and dates
 

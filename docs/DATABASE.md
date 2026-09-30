@@ -30,6 +30,7 @@ MySQL 8 (`utf8mb4` / `utf8mb4_unicode_ci`) managed through Prisma 6 migrations.
 | `20260930194859_driver_earnings`     | 7     | `driver_earnings` (ALLOWANCE/OTHER_EARNING), `driver_adjustments` (POSITIVE_ADJUSTMENT/OTHER_DEDUCTION)                |
 | `20260930200411_expenses_advances`   | 8     | `driver_expenses` (paidBy LV/DRIVER), `driver_advances`, `advance_recoveries`                                          |
 | `20260930202011_driver_settlements`  | 9     | `driver_settlements` (UNIQUE driver+month), `driver_settlement_items`, `driver_settlement_revisions`                   |
+| `20260930204444_driver_payments`     | 10    | `driver_payments` (VALID/REVERSED)                                                                                     |
 
 ## Entity relationship design
 

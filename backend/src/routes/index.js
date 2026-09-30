@@ -9,6 +9,7 @@ import driversRoutes from '../modules/drivers/drivers.routes.js';
 import { driverExpensesRouter, lvExpensesRouter } from '../modules/expenses/expenses.routes.js';
 import { adjustmentsRouter, earningsRouter } from '../modules/earnings/earnings.routes.js';
 import { importsRouter, templatesRouter } from '../modules/imports/imports.routes.js';
+import paymentsRoutes from '../modules/payments/payments.routes.js';
 import ratesRoutes from '../modules/rates/rates.routes.js';
 import rolesRoutes from '../modules/roles/roles.routes.js';
 import settingsRoutes from '../modules/settings/settings.routes.js';
@@ -52,5 +53,6 @@ api.use('/lv-expenses', lvExpensesRouter);
 api.use('/driver-expenses', driverExpensesRouter);
 api.use('/advances', advancesRoutes);
 api.use('/settlements', settlementsRoutes);
+api.use('/payments', paymentsRoutes);
 
 export default api;

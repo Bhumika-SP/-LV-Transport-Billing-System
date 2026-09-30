@@ -118,7 +118,13 @@ export const NAV_SECTIONS = [
         phase: 9,
         permission: P.SETTLEMENT_VIEW,
       },
-      { label: 'Driver Payments', path: '/payments', icon: Banknote, phase: 10, roles: ALL },
+      {
+        label: 'Driver Payments',
+        path: '/payments',
+        icon: Banknote,
+        phase: 10,
+        permission: P.PAYMENT_VIEW,
+      },
       {
         label: 'LV Expenses',
         path: '/lv-expenses',

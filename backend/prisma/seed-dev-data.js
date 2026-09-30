@@ -27,6 +27,7 @@ import {
   prepareMonth,
   submitSettlement,
 } from '../src/modules/settlements/settlements.service.js';
+import { recordPayment } from '../src/modules/payments/payments.service.js';
 import { createTrip } from '../src/modules/trips/trips.service.js';
 import { createVehicleType } from '../src/modules/vehicle-types/vehicle-types.service.js';
 import { createVehicle } from '../src/modules/vehicles/vehicles.service.js';
@@ -395,6 +396,36 @@ async function seedSettlements(actor) {
   );
 }
 
+/** Payments for finalized August settlements: first fully paid, then half-paid, rest unpaid. */
+async function seedPayments(actor) {
+  if ((await prisma.driverPayment.count()) > 0) {
+    console.log('  payments already present — skipped');
+    return;
+  }
+  const finalized = await prisma.driverSettlement.findMany({
+    where: { settlementMonth: '2026-08', status: 'FINALIZED' },
+    orderBy: { id: 'asc' },
+  });
+  const methods = ['BANK_TRANSFER', 'UPI', 'CASH'];
+  let count = 0;
+  for (const [i, s] of finalized.entries()) {
+    if (i > 1) break; // leave the rest unpaid
+    const amount = i === 0 ? s.finalAmount : s.finalAmount.dividedBy(2).toDecimalPlaces(2);
+    await recordPayment(
+      s.id,
+      {
+        amount: amount.toFixed(2),
+        paymentDate: '2026-09-07',
+        paymentMethod: methods[i],
+        referenceNumber: `DEV-PAY-${s.id}`,
+      },
+      actor,
+    );
+    count += 1;
+  }
+  console.log(`  ${count} driver payments`);
+}
+
 export async function seedDevelopmentData(actor) {
   console.log('Seeding development data…');
   await seedMasterData(actor);
@@ -403,4 +434,5 @@ export async function seedDevelopmentData(actor) {
   await seedEarnings(actor);
   await seedExpensesAndAdvances(actor);
   await seedSettlements(actor);
+  await seedPayments(actor);
 }

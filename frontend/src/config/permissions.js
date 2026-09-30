@@ -29,6 +29,9 @@ export const PERMISSIONS = Object.freeze({
   SETTLEMENT_APPROVE: 'settlement.approve',
   SETTLEMENT_FINALIZE: 'settlement.finalize',
   SETTLEMENT_REOPEN: 'settlement.reopen',
+  PAYMENT_VIEW: 'payment.view',
+  PAYMENT_RECORD: 'payment.record',
+  PAYMENT_REVERSE: 'payment.reverse',
 });
 
 export const ROLES = Object.freeze({ ADMIN: 'ADMIN', BILLER: 'BILLER', AUDITOR: 'AUDITOR' });
