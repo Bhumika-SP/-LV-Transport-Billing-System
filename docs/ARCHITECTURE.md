@@ -70,6 +70,8 @@ routes → controllers → services (business rules) → Prisma → MySQL
   set by `backend/.env.test`. The database name **must end in `_test`**; the harness
   refuses anything else because it truncates tables. Migrations are applied
   automatically before the suite runs. Test files run one at a time.
+- **Frontend unit tests** (`frontend/src/**/*.test.js`, Vitest) cover formatting and
+  frontend/backend permission parity. See [TESTING.md](TESTING.md) for the coverage map.
 
 ## Authentication & RBAC (Phase 2)
 

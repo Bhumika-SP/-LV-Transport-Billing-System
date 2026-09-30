@@ -16,12 +16,13 @@
     "dev:web": "npm run dev -w frontend",
     "build": "npm run build -w frontend",
     "lint": "npm run lint -w backend && npm run lint -w frontend",
-    "test": "npm run test -w backend",
+    "test": "npm run test -w backend && npm run test -w frontend",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:generate": "npm run db:generate -w backend",
     "db:migrate": "npm run db:migrate -w backend",
-    "db:studio": "npm run db:studio -w backend"
+    "db:studio": "npm run db:studio -w backend",
+    "test:web": "npm run test -w frontend"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",

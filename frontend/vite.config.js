@@ -8,6 +8,11 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react(), tailwindcss()],
+    test: {
+      environment: 'node',
+      include: ['src/**/*.test.js'],
+      env: { TZ: 'America/Los_Angeles' },
+    },
     server: {
       port: 5173,
       // Proxy API calls in development so auth cookies are same-origin.

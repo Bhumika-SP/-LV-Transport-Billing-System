@@ -100,6 +100,7 @@ Full guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 | [API.md](docs/API.md)                       | Response envelope, error codes, endpoints                                     |
 | [BUSINESS_RULES.md](docs/BUSINESS_RULES.md) | Locked formulas, workflow rules, acceptance scenarios                         |
 | [DEPLOYMENT.md](docs/DEPLOYMENT.md)         | Vercel, Render, managed MySQL, storage, backups                               |
+| [TESTING.md](docs/TESTING.md)               | Running tests, the phase gate, coverage map for the spec's test lists         |
 
 ## Build phases
 
@@ -122,6 +123,6 @@ Full guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 | 14    | GST / finance                                                         | ✅ Complete |
 | 15    | Documents & notifications                                             | ✅ Complete |
 | 16    | Audit                                                                 | ✅ Complete |
-| 17    | Testing                                                               |             |
+| 17    | Testing                                                               | ✅ Complete |
 | 18    | Production hardening                                                  |             |
 | 19    | Deployment                                                            |             |
