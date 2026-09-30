@@ -33,8 +33,17 @@ TRIP EARNINGS = TOTAL KM × VEHICLE-TYPE RATE EFFECTIVE ON THE TRIP DATE
 
 ## R3. Rate history (Phase 3)
 
-- Rates belong to a vehicle type, not to a vehicle. Effective periods may not overlap.
-- Historical rates are never overwritten.
+- Rates belong to a vehicle type, not to a vehicle. Effective periods for ACTIVE rates never overlap.
+- Historical rates are never overwritten. There is no edit. A rate entered in error is **cancelled** with a reason, and the row is kept.
+- Adding a new open-ended rate automatically ends the current open-ended rate the day before (audited). Any other overlap is rejected.
+- Rate lookup for a date: `effectiveFrom ≤ date ≤ effectiveTo (or open)`, status ACTIVE. No match means no rate (an error when pricing a trip).
+- Only Admin/Manager adds or cancels rates.
+
+## R3b. Assignments (Phase 3)
+
+- Vehicle → company and driver → vehicle are separate, effective-dated histories. A driver is not tied to one vehicle forever, and a vehicle is not tied to one company forever.
+- By default a vehicle serves one company at a time, a driver drives one vehicle at a time, and a vehicle has one driver at a time. Each rule is a setting (see A12).
+- Only ACTIVE drivers, vehicles and companies can be newly assigned. Assignments are ended by setting an end date, never deleted.
 
 ## R4. Company settlement (Phase 4)
 

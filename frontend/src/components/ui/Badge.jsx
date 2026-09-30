@@ -14,6 +14,7 @@ const STATUS_TONES = {
   RECEIVED: 'green',
   CANCELLED: 'red',
   CURRENT: 'blue',
+  UPCOMING: 'amber',
   ENDED: 'gray',
 };
 

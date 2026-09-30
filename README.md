@@ -108,7 +108,7 @@ Full guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 | 0     | Project initialization                                                | ✅ Complete |
 | 1     | Foundation (skeleton, health, error handling, logging)                | ✅ Complete |
 | 2     | Authentication & RBAC                                                 | ✅ Complete |
-| 3     | Master data (companies, drivers, vehicles, types, rates, assignments) |             |
+| 3     | Master data (companies, drivers, vehicles, types, rates, assignments) | ✅ Complete |
 | 4     | Company settlement                                                    |             |
 | 5     | Trips                                                                 |             |
 | 6     | Bulk import                                                           |             |

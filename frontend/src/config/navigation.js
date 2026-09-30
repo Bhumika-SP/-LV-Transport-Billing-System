@@ -169,7 +169,13 @@ export const NAV_SECTIONS = [
       { label: 'Users', path: '/users', icon: Users, phase: 2, permission: P.USER_MANAGE },
       { label: 'Roles', path: '/roles', icon: ShieldCheck, phase: 2, permission: P.ROLE_VIEW },
       { label: 'Audit Logs', path: '/audit', icon: History, phase: 16, permission: P.AUDIT_VIEW },
-      { label: 'Settings', path: '/settings', icon: Settings, phase: 6, roles: [ROLES.ADMIN] },
+      {
+        label: 'Settings',
+        path: '/settings',
+        icon: Settings,
+        phase: 3,
+        permission: P.SETTINGS_MANAGE,
+      },
     ],
   },
 ];

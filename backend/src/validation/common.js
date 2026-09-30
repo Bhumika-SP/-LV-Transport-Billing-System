@@ -14,7 +14,7 @@ export const optionalText = (max = 255) =>
     .max(max)
     .optional()
     .nullable()
-    .transform((v) => (v ? v : null));
+    .transform((v) => (v === undefined ? undefined : v || null));
 
 export const requiredText = (max = 255) => z.string().trim().min(1, 'Required').max(max);
 
@@ -26,7 +26,7 @@ export const dateString = z
 export const optionalDate = z
   .union([dateString, z.literal(''), z.null()])
   .optional()
-  .transform((v) => (v ? v : null));
+  .transform((v) => (v === undefined ? undefined : v || null));
 
 export const monthString = z
   .string()
@@ -61,3 +61,11 @@ export const listQuery = (sortFields, defaultSort) =>
   });
 
 export const optionalId = z.coerce.number().int().positive().optional();
+
+/** Query for dropdown `/options` endpoints. */
+export const optionsQuery = z.object({
+  includeInactive: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((v) => v === 'true'),
+});

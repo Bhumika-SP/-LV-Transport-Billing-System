@@ -56,11 +56,11 @@ export async function fetchHealth() {
 }
 
 /**
- * Apply backend field-level validation errors to a react-hook-form instance.
- * Returns true if at least one field error was applied.
+ * Apply backend field-level errors (validation or duplicate/conflict details) to a
+ * react-hook-form instance. Returns true if at least one field error was applied.
  */
 export function applyServerErrors(error, setError) {
-  if (error?.code !== 'VALIDATION_ERROR' || !Array.isArray(error.details)) return false;
+  if (!Array.isArray(error?.details)) return false;
   let applied = false;
   for (const d of error.details) {
     if (d.path) {

@@ -3,6 +3,7 @@ export const PERMISSIONS = Object.freeze({
   USER_MANAGE: 'user.manage',
   ROLE_VIEW: 'role.view',
   AUDIT_VIEW: 'audit.view',
+  SETTINGS_MANAGE: 'settings.manage',
   MASTER_VIEW: 'master.view',
   COMPANY_MANAGE: 'company.manage',
   DRIVER_MANAGE: 'driver.manage',

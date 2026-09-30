@@ -36,6 +36,7 @@ export const PERMISSIONS = Object.freeze({
   USER_MANAGE: 'user.manage',
   ROLE_VIEW: 'role.view',
   AUDIT_VIEW: 'audit.view',
+  SETTINGS_MANAGE: 'settings.manage',
   // Master data (Phase 3)
   MASTER_VIEW: 'master.view',
   COMPANY_MANAGE: 'company.manage',
@@ -66,6 +67,7 @@ export const PERMISSION_DEFINITIONS = [
   ],
   [P.ROLE_VIEW, 'System', 'View roles and the permission matrix', [ADMIN]],
   [P.AUDIT_VIEW, 'System', 'View audit history', [ADMIN, AUDITOR]],
+  [P.SETTINGS_MANAGE, 'System', 'Change configurable business rules (system settings)', [ADMIN]],
 
   [
     P.MASTER_VIEW,

@@ -96,6 +96,15 @@ model User {
   createdUsers User[]     @relation("UserCreatedBy")
   auditLogs    AuditLog[]
 
+  companiesCreated          Company[]           @relation("CompanyCreatedBy")
+  driversCreated            Driver[]            @relation("DriverCreatedBy")
+  vehicleTypesCreated       VehicleType[]       @relation("VehicleTypeCreatedBy")
+  ratesCreated              VehicleTypeRate[]   @relation("RateCreatedBy")
+  ratesCancelled            VehicleTypeRate[]   @relation("RateCancelledBy")
+  vehiclesCreated           Vehicle[]           @relation("VehicleCreatedBy")
+  vehicleAssignmentsCreated VehicleAssignment[] @relation("VehicleAssignmentCreatedBy")
+  driverAssignmentsCreated  DriverAssignment[]  @relation("DriverAssignmentCreatedBy")
+
   @@index([roleId])
   @@index([status])
   @@map("users")
@@ -123,4 +132,197 @@ model AuditLog {
   @@index([action])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// ============================================================
+// Phase 3 — Master data
+// ============================================================
+
+enum RecordStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum RateStatus {
+  ACTIVE
+  CANCELLED
+}
+
+enum FuelType {
+  PETROL
+  DIESEL
+  CNG
+  ELECTRIC
+  HYBRID
+  LPG
+  OTHER
+}
+
+/// Corporate client. Name is unique; code is an optional short unique key.
+model Company {
+  id            Int          @id @default(autoincrement())
+  code          String?      @unique @db.VarChar(20)
+  name          String       @unique @db.VarChar(150)
+  contactPerson String?      @map("contact_person") @db.VarChar(100)
+  phone         String?      @db.VarChar(20)
+  email         String?      @db.VarChar(191)
+  address       String?      @db.Text
+  gstin         String?      @db.VarChar(15)
+  status        RecordStatus @default(ACTIVE)
+  notes         String?      @db.Text
+  createdById   Int?         @map("created_by_id")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  createdBy          User?               @relation("CompanyCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  vehicleAssignments VehicleAssignment[]
+
+  @@index([status])
+  @@map("companies")
+}
+
+model Driver {
+  id                Int          @id @default(autoincrement())
+  driverCode        String       @unique @map("driver_code") @db.VarChar(20)
+  fullName          String       @map("full_name") @db.VarChar(100)
+  phone             String       @db.VarChar(15)
+  alternatePhone    String?      @map("alternate_phone") @db.VarChar(15)
+  address           String?      @db.Text
+  joiningDate       DateTime?    @map("joining_date") @db.Date
+  licenseNumber     String?      @unique @map("license_number") @db.VarChar(30)
+  licenseExpiryDate DateTime?    @map("license_expiry_date") @db.Date
+  status            RecordStatus @default(ACTIVE)
+  bankAccountName   String?      @map("bank_account_name") @db.VarChar(100)
+  bankAccountNumber String?      @map("bank_account_number") @db.VarChar(30)
+  bankIfsc          String?      @map("bank_ifsc") @db.VarChar(11)
+  bankName          String?      @map("bank_name") @db.VarChar(100)
+  upiId             String?      @map("upi_id") @db.VarChar(100)
+  notes             String?      @db.Text
+  createdById       Int?         @map("created_by_id")
+  createdAt         DateTime     @default(now()) @map("created_at")
+  updatedAt         DateTime     @updatedAt @map("updated_at")
+
+  createdBy   User?              @relation("DriverCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  assignments DriverAssignment[]
+
+  @@index([status])
+  @@index([fullName])
+  @@index([phone])
+  @@map("drivers")
+}
+
+/// Trip rates are defined per vehicle type (spec 13), not per vehicle.
+model VehicleType {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique @db.VarChar(50)
+  description String?      @db.VarChar(255)
+  status      RecordStatus @default(ACTIVE)
+  createdById Int?         @map("created_by_id")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  createdBy User?             @relation("VehicleTypeCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  rates     VehicleTypeRate[]
+  vehicles  Vehicle[]
+
+  @@map("vehicle_types")
+}
+
+/// Append-only rate history. Active periods for a type never overlap (enforced in
+/// rates.service under a row lock). Values are never edited; mistakes are CANCELLED.
+model VehicleTypeRate {
+  id            Int        @id @default(autoincrement())
+  vehicleTypeId Int        @map("vehicle_type_id")
+  ratePerKm     Decimal    @map("rate_per_km") @db.Decimal(10, 2)
+  effectiveFrom DateTime   @map("effective_from") @db.Date
+  effectiveTo   DateTime?  @map("effective_to") @db.Date
+  status        RateStatus @default(ACTIVE)
+  notes         String?    @db.VarChar(255)
+  cancelReason  String?    @map("cancel_reason") @db.VarChar(255)
+  cancelledAt   DateTime?  @map("cancelled_at")
+  cancelledById Int?       @map("cancelled_by_id")
+  createdById   Int?       @map("created_by_id")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  vehicleType VehicleType @relation(fields: [vehicleTypeId], references: [id], onDelete: Restrict)
+  createdBy   User?       @relation("RateCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  cancelledBy User?       @relation("RateCancelledBy", fields: [cancelledById], references: [id], onDelete: SetNull)
+
+  @@index([vehicleTypeId, status, effectiveFrom])
+  @@map("vehicle_type_rates")
+}
+
+model Vehicle {
+  id                       Int          @id @default(autoincrement())
+  /// Normalized: upper-case, no spaces or hyphens (e.g. KA01AB1234).
+  registrationNumber       String       @unique @map("registration_number") @db.VarChar(20)
+  vehicleTypeId            Int          @map("vehicle_type_id")
+  make                     String?      @db.VarChar(50)
+  model                    String?      @db.VarChar(50)
+  year                     Int?         @db.SmallInt
+  fuelType                 FuelType?    @map("fuel_type")
+  status                   RecordStatus @default(ACTIVE)
+  insuranceProvider        String?      @map("insurance_provider") @db.VarChar(100)
+  insurancePolicyNumber    String?      @map("insurance_policy_number") @db.VarChar(50)
+  insuranceExpiryDate      DateTime?    @map("insurance_expiry_date") @db.Date
+  fitnessCertificateNumber String?      @map("fitness_certificate_number") @db.VarChar(50)
+  fitnessExpiryDate        DateTime?    @map("fitness_expiry_date") @db.Date
+  permitNumber             String?      @map("permit_number") @db.VarChar(50)
+  permitExpiryDate         DateTime?    @map("permit_expiry_date") @db.Date
+  notes                    String?      @db.Text
+  createdById              Int?         @map("created_by_id")
+  createdAt                DateTime     @default(now()) @map("created_at")
+  updatedAt                DateTime     @updatedAt @map("updated_at")
+
+  vehicleType        VehicleType         @relation(fields: [vehicleTypeId], references: [id], onDelete: Restrict)
+  createdBy          User?               @relation("VehicleCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  companyAssignments VehicleAssignment[]
+  driverAssignments  DriverAssignment[]
+
+  @@index([vehicleTypeId])
+  @@index([status])
+  @@map("vehicles")
+}
+
+/// Which company a vehicle serves, over time (endDate NULL = open-ended).
+model VehicleAssignment {
+  id          Int       @id @default(autoincrement())
+  vehicleId   Int       @map("vehicle_id")
+  companyId   Int       @map("company_id")
+  startDate   DateTime  @map("start_date") @db.Date
+  endDate     DateTime? @map("end_date") @db.Date
+  notes       String?   @db.VarChar(255)
+  createdById Int?      @map("created_by_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  createdBy User?   @relation("VehicleAssignmentCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([vehicleId, startDate])
+  @@index([companyId, startDate])
+  @@map("vehicle_assignments")
+}
+
+/// Which vehicle a driver drives, over time (endDate NULL = open-ended).
+model DriverAssignment {
+  id          Int       @id @default(autoincrement())
+  driverId    Int       @map("driver_id")
+  vehicleId   Int       @map("vehicle_id")
+  startDate   DateTime  @map("start_date") @db.Date
+  endDate     DateTime? @map("end_date") @db.Date
+  notes       String?   @db.VarChar(255)
+  createdById Int?      @map("created_by_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  driver    Driver  @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  createdBy User?   @relation("DriverAssignmentCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([driverId, startDate])
+  @@index([vehicleId, startDate])
+  @@map("driver_assignments")
 }

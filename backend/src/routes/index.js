@@ -1,8 +1,15 @@
 import { Router } from 'express';
 import { requireCsrfHeader } from '../middleware/csrf.js';
+import assignmentsRoutes from '../modules/assignments/assignments.routes.js';
 import authRoutes from '../modules/auth/auth.routes.js';
+import companiesRoutes from '../modules/companies/companies.routes.js';
+import driversRoutes from '../modules/drivers/drivers.routes.js';
+import ratesRoutes from '../modules/rates/rates.routes.js';
 import rolesRoutes from '../modules/roles/roles.routes.js';
+import settingsRoutes from '../modules/settings/settings.routes.js';
 import usersRoutes from '../modules/users/users.routes.js';
+import vehicleTypesRoutes from '../modules/vehicle-types/vehicle-types.routes.js';
+import vehiclesRoutes from '../modules/vehicles/vehicles.routes.js';
 import { ok } from '../utils/response.js';
 
 /**
@@ -18,5 +25,13 @@ api.get('/', (_req, res) => ok(res, { name: 'LV Transport Billing API', version:
 api.use('/auth', authRoutes);
 api.use('/users', usersRoutes);
 api.use('/roles', rolesRoutes);
+api.use('/settings', settingsRoutes);
+
+api.use('/companies', companiesRoutes);
+api.use('/drivers', driversRoutes);
+api.use('/vehicle-types', vehicleTypesRoutes);
+api.use('/rates', ratesRoutes);
+api.use('/vehicles', vehiclesRoutes);
+api.use('/assignments', assignmentsRoutes);
 
 export default api;

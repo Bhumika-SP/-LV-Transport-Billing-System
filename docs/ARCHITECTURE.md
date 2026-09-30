@@ -83,6 +83,15 @@ routes → controllers → services (business rules) → Prisma → MySQL
 - **Audit:** `LOGIN`, `LOGIN_FAILED`, `LOGOUT`, `PASSWORD_CHANGE`, `PASSWORD_RESET`, user `CREATE`/`UPDATE`/`STATUS_CHANGE`/`ROLE_CHANGE` are written to `audit_logs` inside the same transaction as the change.
 - **Frontend:** `AuthProvider` (from `/auth/me`), `RequireAuth` and `RequireAccess` guards, and navigation filtered by `permission`/`roles`. A 401 anywhere drops the session. All of this is UX only; the API is the authority.
 
+## Concurrency
+
+Rules that span rows (no overlapping rates or assignments, and later balances and
+payment limits) are enforced in services. The service locks the parent row
+(`SELECT … FOR UPDATE` via `lockRow`) **before any read**, and runs the transaction
+with `LOCKING_TX` (READ COMMITTED). This makes reads after the lock see rows committed
+by the previous lock holder. Tests fire concurrent requests and assert that exactly one
+succeeds.
+
 ## Security baseline
 
 - Helmet headers, `x-powered-by` disabled, JSON body limit 1 MB.
@@ -119,3 +128,7 @@ would break a cross-site setup where the frontend is on `*.vercel.app` and the A
 | A9  | Rate management                               | Adding or cancelling vehicle-type rates changes trip earnings, so it is **Admin only** (`rate.manage`). Billers manage vehicles and types (§8 "create/edit vehicles").                                                                                                                                                                                                                      | Decided, easy to change in `permissions.js` |
 | A10 | Roles screen                                  | The three roles and their permission matrix are defined in code and shown read-only. There is no custom role editor in V1 (spec: exactly three roles).                                                                                                                                                                                                                                      | Decided                                     |
 | A11 | Vehicle Types navigation                      | "Vehicle Types" (with rate history) gets its own Operations menu entry, because §13 requires types to be maintained separately.                                                                                                                                                                                                                                                             | Decided                                     |
+| A12 | Concurrent assignments                        | Not specified. Three **settings**, each defaulting to _no overlap_: vehicle↔several companies, driver↔several vehicles, vehicle↔several drivers (e.g. shift drivers). Admin can change them on the Settings page.                                                                                                                                                                           | Configurable                                |
+| A13 | Identity uniqueness                           | Company **name** is unique (code optional but unique). Driver **licence number** is unique when given. Driver phone is not unique. Vehicle **registration** is unique after normalization (upper-case, no spaces or hyphens).                                                                                                                                                               | Decided                                     |
+| A14 | Rate supersession                             | Only a new **open-ended** rate closes the previous open-ended rate. A bounded rate overlapping an active rate is rejected rather than split, so no silent gaps appear.                                                                                                                                                                                                                      | Decided                                     |
+| A15 | Deletion                                      | Master data is never hard-deleted. It is deactivated, so history and reports stay intact.                                                                                                                                                                                                                                                                                                   | Decided                                     |
