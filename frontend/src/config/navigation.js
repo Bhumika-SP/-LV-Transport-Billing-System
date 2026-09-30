@@ -164,7 +164,13 @@ export const NAV_SECTIONS = [
   {
     title: 'Finance & Tax',
     items: [
-      { label: 'Finance Dashboard', path: '/finance', icon: Gauge, phase: 12, roles: FINANCE },
+      {
+        label: 'Finance Dashboard',
+        path: '/finance',
+        icon: Gauge,
+        phase: 12,
+        permission: P.PROFIT_VIEW,
+      },
       { label: 'GST', path: '/gst', icon: FileText, phase: 14, roles: FINANCE },
       { label: 'Tax Reports', path: '/tax-reports', icon: FileBarChart, phase: 14, roles: FINANCE },
       { label: 'Exports', path: '/exports', icon: FileSpreadsheet, phase: 14, roles: FINANCE },

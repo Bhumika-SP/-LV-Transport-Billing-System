@@ -32,6 +32,7 @@ import VehicleTypesPage from './features/vehicle-types/VehicleTypesPage';
 import VehicleDetailPage from './features/vehicles/VehicleDetailPage';
 import VehiclesPage from './features/vehicles/VehiclesPage';
 import DashboardPage from './pages/DashboardPage';
+import FinanceDashboardPage from './pages/FinanceDashboardPage';
 import LoginPage from './pages/LoginPage';
 import ModulePlaceholderPage from './pages/ModulePlaceholderPage';
 import NotFoundPage from './pages/NotFoundPage';
@@ -58,6 +59,7 @@ const PAGES = {
   '/profit/company': CompanyProfitPage,
   '/profit/monthly': MonthlyProfitPage,
   '/profit/overall': OverallProfitPage,
+  '/finance': FinanceDashboardPage,
 };
 
 /** Routes that are not nav entries (detail pages). */

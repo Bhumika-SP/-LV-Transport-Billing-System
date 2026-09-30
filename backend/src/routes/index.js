@@ -5,6 +5,7 @@ import authRoutes from '../modules/auth/auth.routes.js';
 import companiesRoutes from '../modules/companies/companies.routes.js';
 import companySettlementsRoutes from '../modules/company-settlements/company-settlements.routes.js';
 import advancesRoutes from '../modules/advances/advances.routes.js';
+import dashboardRoutes from '../modules/dashboard/dashboard.routes.js';
 import driversRoutes from '../modules/drivers/drivers.routes.js';
 import { driverExpensesRouter, lvExpensesRouter } from '../modules/expenses/expenses.routes.js';
 import { adjustmentsRouter, earningsRouter } from '../modules/earnings/earnings.routes.js';
@@ -56,5 +57,6 @@ api.use('/advances', advancesRoutes);
 api.use('/settlements', settlementsRoutes);
 api.use('/payments', paymentsRoutes);
 api.use('/profit', profitRoutes);
+api.use('/dashboard', dashboardRoutes);
 
 export default api;

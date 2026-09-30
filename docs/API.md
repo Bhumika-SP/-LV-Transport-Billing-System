@@ -288,6 +288,22 @@ settlements count. Pending and unfinalized amounts are returned separately for c
 | GET    | `/profit/companies?month= | fromMonth=&toMonth=`                       | `companies[]` (the `company: null` row = settlements with no trips, not attributable) plus `totals`                                    |
 | GET    | `/profit/overall`         | All-time `totals` plus the monthly `trend` |
 
+### Dashboard — `/api/dashboard` (Phase 12)
+
+`GET /dashboard` (any signed-in user). It returns only the sections the caller's permissions allow:
+
+| Section           | Needs                   | Content                                                                              |
+| ----------------- | ----------------------- | ------------------------------------------------------------------------------------ |
+| `counts`          | master.view             | Active companies, drivers, vehicles; trips, km and trip earnings this month          |
+| `companyReceipts` | company_settlement.view | This and last month expected / received / pending; past months still pending         |
+| `settlements`     | settlement.view         | Last month by status; settlements awaiting approval or finalization; negative drafts |
+| `payments`        | payment.view            | Outstanding to drivers; paid this month                                              |
+| `profit`          | profit.view             | Last 6 months totals and trend                                                       |
+| `imports`         | import.view             | Batches awaiting confirmation; with errors or failed (30 days)                       |
+| `expenses`        | driver_finance.view     | This month LV-paid by category, driver-paid, entries                                 |
+| `documentAlerts`  | master.view             | Licence, insurance, fitness and permit expiring within 30 days or expired            |
+| `auditAlerts`     | audit.view              | Failed logins (24 h), reopens and payment reversals (30 days)                        |
+
 ### Planned modules (spec §61)
 
 `/api/auth`, `/api/users`, `/api/companies`, `/api/drivers`, `/api/vehicles`,
