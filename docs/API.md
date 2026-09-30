@@ -304,6 +304,27 @@ settlements count. Pending and unfinalized amounts are returned separately for c
 | `documentAlerts`  | master.view             | Licence, insurance, fitness and permit expiring within 30 days or expired            |
 | `auditAlerts`     | audit.view              | Failed logins (24 h), reopens and payment reversals (30 days)                        |
 
+### Reports & exports — `/api/reports` (Phase 13)
+
+| Method | Path                       | Notes                                                              |
+| ------ | -------------------------- | ------------------------------------------------------------------ |
+| GET    | `/reports`                 | Reports the caller may run: `{ key, title, filters[], columns[] }` |
+| GET    | `/reports/:key?format=json | csv                                                                | xlsx | pdf&<filters>` | Same data, filters and **permission** for screen and export. JSON: `{ columns, rows, totals, rowCount, filters, generatedAt }`. Exports are audited (`EXPORT`) |
+
+| Key                                                          | Permission              | Filters                                                         |
+| ------------------------------------------------------------ | ----------------------- | --------------------------------------------------------------- |
+| `trips`                                                      | trip.view               | month, fromDate, toDate, companyId, driverId, vehicleId, status |
+| `driver-earnings`                                            | driver_finance.view     | month, fromMonth, toMonth, driverId                             |
+| `driver-settlements`, `driver-reconciliation`                | settlement.view         | month, fromMonth, toMonth, driverId (status)                    |
+| `payment-outstanding`, `driver-payments`                     | payment.view            | month/dates, driverId (status)                                  |
+| `expenses`                                                   | driver_finance.view     | month, dates, driverId, vehicleId, paidBy, category, status     |
+| `advances`, `deductions`                                     | driver_finance.view     | dates/month, driverId (status)                                  |
+| `company-settlements`                                        | company_settlement.view | month range, companyId, status                                  |
+| `company-reconciliation`, `company-profit`, `monthly-profit` | profit.view             | month range, companyId                                          |
+| `imports`                                                    | import.view             | dates, companyId, status                                        |
+
+Formats: **CSV** (raw numbers, UTF-8 BOM, totals row, formula-injection safe), **Excel** (numeric money cells with Indian grouping, filters and author header) and **PDF** (landscape table; amounts in "Rs" because the built-in PDF fonts have no ₹ glyph). Up to 50,000 rows per report.
+
 ### Planned modules (spec §61)
 
 `/api/auth`, `/api/users`, `/api/companies`, `/api/drivers`, `/api/vehicles`,

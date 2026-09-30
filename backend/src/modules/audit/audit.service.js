@@ -26,6 +26,7 @@ export const AUDIT_ACTIONS = Object.freeze({
   REOPEN: 'REOPEN',
   PAYMENT: 'PAYMENT',
   REVERSE: 'REVERSE',
+  EXPORT: 'EXPORT',
 });
 
 const SENSITIVE_KEYS = new Set(['passwordHash', 'password', 'tokenVersion']);

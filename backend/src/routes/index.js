@@ -13,6 +13,7 @@ import { importsRouter, templatesRouter } from '../modules/imports/imports.route
 import paymentsRoutes from '../modules/payments/payments.routes.js';
 import profitRoutes from '../modules/profit/profit.routes.js';
 import ratesRoutes from '../modules/rates/rates.routes.js';
+import reportsRoutes from '../modules/reports/reports.routes.js';
 import rolesRoutes from '../modules/roles/roles.routes.js';
 import settingsRoutes from '../modules/settings/settings.routes.js';
 import settlementsRoutes from '../modules/settlements/settlements.routes.js';
@@ -58,5 +59,6 @@ api.use('/settlements', settlementsRoutes);
 api.use('/payments', paymentsRoutes);
 api.use('/profit', profitRoutes);
 api.use('/dashboard', dashboardRoutes);
+api.use('/reports', reportsRoutes);
 
 export default api;

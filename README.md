@@ -118,7 +118,7 @@ Full guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 | 10    | Driver payments                                                       | ✅ Complete |
 | 11    | LV profit                                                             | ✅ Complete |
 | 12    | Dashboards                                                            | ✅ Complete |
-| 13    | Reports                                                               |             |
+| 13    | Reports                                                               | ✅ Complete |
 | 14    | GST / finance                                                         |             |
 | 15    | Documents & notifications                                             |             |
 | 16    | Audit                                                                 |             |

@@ -20,6 +20,16 @@ import {
   MonthlyProfitPage,
   OverallProfitPage,
 } from './features/profit/ProfitPages';
+import { ExportsPage } from './features/reports/ReportsPage';
+import {
+  DriverReportsPage,
+  ExpenseReportsPage,
+  PaymentReportsPage,
+  ProfitReportsPage,
+  ReconciliationPage,
+  SettlementReportsPage,
+  TripReportsPage,
+} from './features/reports/reportPages';
 import RolesPage from './features/roles/RolesPage';
 import SettingsPage from './features/settings/SettingsPage';
 import SettlementDetailPage from './features/settlements/SettlementDetailPage';
@@ -60,6 +70,14 @@ const PAGES = {
   '/profit/monthly': MonthlyProfitPage,
   '/profit/overall': OverallProfitPage,
   '/finance': FinanceDashboardPage,
+  '/reconciliation': ReconciliationPage,
+  '/exports': ExportsPage,
+  '/reports/drivers': DriverReportsPage,
+  '/reports/trips': TripReportsPage,
+  '/reports/expenses': ExpenseReportsPage,
+  '/reports/settlements': SettlementReportsPage,
+  '/reports/payments': PaymentReportsPage,
+  '/reports/profit': ProfitReportsPage,
 };
 
 /** Routes that are not nav entries (detail pages). */

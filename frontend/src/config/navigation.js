@@ -132,7 +132,13 @@ export const NAV_SECTIONS = [
         phase: 8,
         permission: P.DRIVER_FINANCE_VIEW,
       },
-      { label: 'Reconciliation', path: '/reconciliation', icon: Scale, phase: 13, roles: FINANCE },
+      {
+        label: 'Reconciliation',
+        path: '/reconciliation',
+        icon: Scale,
+        phase: 13,
+        permission: P.PROFIT_VIEW,
+      },
     ],
   },
   {
@@ -173,7 +179,7 @@ export const NAV_SECTIONS = [
       },
       { label: 'GST', path: '/gst', icon: FileText, phase: 14, roles: FINANCE },
       { label: 'Tax Reports', path: '/tax-reports', icon: FileBarChart, phase: 14, roles: FINANCE },
-      { label: 'Exports', path: '/exports', icon: FileSpreadsheet, phase: 14, roles: FINANCE },
+      { label: 'Exports', path: '/exports', icon: FileSpreadsheet, phase: 13, roles: ALL },
     ],
   },
   {
@@ -201,7 +207,7 @@ export const NAV_SECTIONS = [
         path: '/reports/profit',
         icon: BarChart3,
         phase: 13,
-        roles: FINANCE,
+        permission: P.PROFIT_VIEW,
       },
     ],
   },
