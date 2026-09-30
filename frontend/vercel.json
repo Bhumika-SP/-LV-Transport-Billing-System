@@ -1,0 +1,10 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://YOUR-RENDER-SERVICE.onrender.com/api/:path*"
+    },
+    { "source": "/health", "destination": "https://YOUR-RENDER-SERVICE.onrender.com/health" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

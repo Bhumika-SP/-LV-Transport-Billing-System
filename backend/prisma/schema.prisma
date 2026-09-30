@@ -1,0 +1,31 @@
+// LV Transport Billing System — Prisma schema
+//
+// Conventions (see docs/ARCHITECTURE.md):
+//   * Money      -> Decimal @db.Decimal(15, 2); never JS floats.
+//   * Timestamps -> DateTime (stored as UTC).
+//   * Business dates (trip date, expense date, payment date) -> DateTime @db.Date,
+//     always interpreted as an Asia/Kolkata calendar date.
+//   * Settlement months -> String @db.Char(7) in "YYYY-MM" format.
+//
+// Models are added phase by phase according to docs/ERD.md.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// System-wide key/value settings (e.g. duplicate-detection defaults, tax config).
+/// Value is JSON so settings can evolve without schema changes.
+model Setting {
+  key         String   @id @db.VarChar(100)
+  value       Json
+  description String?  @db.VarChar(255)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
+}
