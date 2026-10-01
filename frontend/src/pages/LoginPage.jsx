@@ -70,6 +70,19 @@ function LoginForm({ stage }) {
     defaultValues: { email: '', password: '', rememberMe: false },
   });
 
+  // Chrome paints autofilled values in its small default font until the first click. Force a
+  // restyle of the filled fields right after load (and once more shortly after) so they take
+  // the form's own font size straight away.
+  useEffect(() => {
+    const restyle = () =>
+      document.querySelectorAll('.login-input').forEach((input) => {
+        input.style.fontSize = 'calc(var(--login-fs) + 0.01px)';
+        void input.offsetHeight;
+        input.style.fontSize = '';
+      });
+    const timers = [50, 300, 1000, 2500].map((ms) => setTimeout(restyle, ms));
+    return () => timers.forEach(clearTimeout);
+  }, []);
 
   const onSubmit = async (values) => {
     setFormError(null);
@@ -81,7 +94,10 @@ function LoginForm({ stage }) {
     }
   };
 
-
+  const inputClass = `login-input block w-full rounded-xl border border-[#e1e8f2] bg-[#f6f8fc] pl-[52px] text-[#0f2a5c] placeholder:text-[#8a98b3] transition-shadow focus:border-[#1a6fd6] focus:ring-4 focus:ring-[#1a6fd6]/15 focus:outline-none aria-[invalid=true]:border-red-500 ${
+    stage ? 'h-[64px] text-[22px]' : 'h-[56px] text-[18px]'
+  }`;
+  const fontVar = { '--login-fs': stage ? '22px' : '18px' };
   const iconClass =
     'pointer-events-none absolute top-1/2 left-[18px] h-[22px] w-[22px] -translate-y-1/2 text-[#6b7a90]';
   const labelHack =
@@ -137,7 +153,7 @@ function LoginForm({ stage }) {
               <input
                 {...p}
                 className={`${inputClass} pr-4`}
-
+                style={fontVar}
                 type="email"
                 autoComplete="username"
                 placeholder="Enter your email address"
@@ -153,7 +169,7 @@ function LoginForm({ stage }) {
               <input
                 {...p}
                 className={`${inputClass} pr-14`}
-
+                style={fontVar}
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
                 placeholder="Enter your password"
