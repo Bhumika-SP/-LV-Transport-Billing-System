@@ -22,20 +22,6 @@
   --color-brand-900: #08375a;
 }
 
-/* Chrome shows autofilled values in its small default font until the page is clicked;
-   keep the login fields' own size, colour and background. */
-.login-input:-webkit-autofill,
-.login-input:-webkit-autofill:hover,
-.login-input:-webkit-autofill:focus,
-.login-input:-webkit-autofill:active {
-  font-family: inherit !important;
-  font-size: var(--login-fs) !important;
-  font-weight: 400 !important;
-  -webkit-text-fill-color: #0f2a5c;
-  box-shadow: 0 0 0 1000px #f6f8fc inset;
-  caret-color: #0f2a5c;
-}
-
 @layer base {
   html,
   body,
