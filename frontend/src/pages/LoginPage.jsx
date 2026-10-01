@@ -205,13 +205,11 @@ function LoginForm({ stage }) {
           type="submit"
           disabled={isSubmitting}
           className={`relative flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-[#0a58a6] to-[#1b79d1] font-semibold text-white shadow-sm transition-[filter] hover:brightness-110 focus-visible:ring-4 focus-visible:ring-[#1a6fd6]/30 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-70 ${
-            stage ? 'h-[56px] text-[18px]' : 'h-[52px] text-base'
+            stage ? 'h-[60px] text-[22px]' : 'h-[54px] text-lg'
           }`}
         >
           {isSubmitting ? 'Signing in…' : 'Sign In'}
-          {!isSubmitting && (
-            <ArrowRight className="absolute right-6 h-[22px] w-[22px]" aria-hidden="true" />
-          )}
+          {!isSubmitting && <ArrowRight className="absolute right-6 h-6 w-6" aria-hidden="true" />}
         </button>
       </form>
 
