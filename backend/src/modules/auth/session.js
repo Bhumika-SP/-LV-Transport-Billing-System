@@ -4,11 +4,11 @@ import { env } from '../../config/env.js';
 export const SESSION_COOKIE = 'lv_session';
 const ISSUER = 'lv-billing-api';
 
-export function signSession(user) {
+export function signSession(user, hours = env.SESSION_HOURS) {
   return jwt.sign({ tv: user.tokenVersion }, env.JWT_SECRET, {
     subject: String(user.id),
     issuer: ISSUER,
-    expiresIn: Math.round(env.SESSION_HOURS * 3600),
+    expiresIn: Math.round(hours * 3600),
     algorithm: 'HS256',
   });
 }
@@ -33,10 +33,12 @@ function cookieOptions() {
   };
 }
 
-export function setSessionCookie(res, user) {
-  res.cookie(SESSION_COOKIE, signSession(user), {
+/** `remember` (login's "Remember me") uses REMEMBER_SESSION_DAYS instead of SESSION_HOURS. */
+export function setSessionCookie(res, user, { remember = false } = {}) {
+  const hours = remember ? env.REMEMBER_SESSION_DAYS * 24 : env.SESSION_HOURS;
+  res.cookie(SESSION_COOKIE, signSession(user, hours), {
     ...cookieOptions(),
-    maxAge: env.SESSION_HOURS * 3600 * 1000,
+    maxAge: hours * 3600 * 1000,
   });
 }
 

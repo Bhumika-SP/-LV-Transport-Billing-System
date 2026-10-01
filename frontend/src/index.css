@@ -2,12 +2,24 @@
 
 @theme {
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --color-brand-50: #eff6ff;
-  --color-brand-100: #dbeafe;
-  --color-brand-600: #2563eb;
-  --color-brand-700: #1d4ed8;
-  --color-brand-800: #1e40af;
-  --color-brand-900: #1e3a8a;
+  /* LV Transport design system: cool light-blue neutrals + cyan-to-navy brand (matches the login screen). */
+  --color-slate-50: #eef3f8;
+  --color-slate-100: #e8eff5;
+  --color-slate-200: #dce5ee;
+  --color-slate-300: #c9d5e2;
+  --color-slate-400: #94a3b6;
+  --color-slate-500: #64758b;
+  --color-slate-600: #4b5d73;
+  --color-slate-700: #33445a;
+  --color-slate-800: #1c2e44;
+  --color-slate-900: #0f2236;
+  /* LV brand: cyan-blue to deep transport blue */
+  --color-brand-50: #e5f3f8;
+  --color-brand-100: #cde9f1;
+  --color-brand-600: #0e7c9a;
+  --color-brand-700: #0b5f86;
+  --color-brand-800: #0a4c73;
+  --color-brand-900: #08375a;
 }
 
 @layer base {
@@ -19,5 +31,26 @@
 
   body {
     @apply bg-slate-50 text-slate-900 antialiased;
+  }
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@theme {
+  --animate-menu: menu-in 0.12s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-menu {
+    animation: none;
   }
 }

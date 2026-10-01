@@ -9,12 +9,22 @@ export async function findOr404(delegate, id, { code, label, ...args }) {
 }
 
 /**
+ * Index/column that violated a P2002 unique constraint. The native engine reports it
+ * in `meta.target`; the driver adapter reports it in `meta.driverAdapterError`.
+ */
+export function uniqueTarget(err) {
+  const constraint = err.meta?.driverAdapterError?.cause?.constraint;
+  const fromAdapter = constraint?.index ?? constraint?.fields;
+  return String(fromAdapter ?? err.meta?.target ?? '');
+}
+
+/**
  * Convert a Prisma unique-constraint violation into a 409 with a field-level detail.
  * `fields` maps a column name fragment of the index to { path, message }.
  */
 export function rethrowUnique(err, fields) {
   if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
-    const target = String(err.meta?.target ?? '');
+    const target = uniqueTarget(err);
     for (const [fragment, { path, message }] of Object.entries(fields)) {
       if (target.includes(fragment)) {
         throw AppError.conflict(message, 'DUPLICATE_RECORD', [{ path, message }]);

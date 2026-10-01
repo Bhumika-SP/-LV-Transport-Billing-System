@@ -1,22 +1,26 @@
-import argon2 from 'argon2';
+import { hash, verify } from '@node-rs/argon2';
 
 /** argon2id with OWASP-recommended baseline parameters. */
-const OPTIONS = { type: argon2.argon2id, memoryCost: 19_456, timeCost: 2, parallelism: 1 };
+const ARGON2ID = 2; // @node-rs/argon2 Algorithm.Argon2id (const enum, so use the value)
+const OPTIONS = { algorithm: ARGON2ID, memoryCost: 19_456, timeCost: 2, parallelism: 1 };
 
 export function hashPassword(plain) {
-  return argon2.hash(plain, OPTIONS);
+  return hash(plain, OPTIONS);
 }
 
-export async function verifyPassword(hash, plain) {
+export async function verifyPassword(storedHash, plain) {
   try {
-    return await argon2.verify(hash, plain);
+    return await verify(storedHash, plain);
   } catch {
     return false;
   }
 }
 
-export function needsRehash(hash) {
-  return argon2.needsRehash(hash, OPTIONS);
+export function needsRehash(storedHash) {
+  const match = /^\$argon2id\$v=\d+\$m=(\d+),t=(\d+),p=(\d+)\$/.exec(storedHash);
+  if (!match) return true;
+  const [, m, t, p] = match.map(Number);
+  return m !== OPTIONS.memoryCost || t !== OPTIONS.timeCost || p !== OPTIONS.parallelism;
 }
 
 // Verified against when the email is unknown, so response time does not reveal

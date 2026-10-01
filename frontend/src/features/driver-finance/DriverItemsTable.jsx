@@ -65,6 +65,7 @@ export default function DriverItemsTable({
       : [
           {
             key: 'driver',
+            important: true,
             header: 'Driver',
             render: (i) => (
               <Link className="text-brand-700 hover:underline" to={`/drivers/${i.driver.id}`}>
@@ -101,6 +102,7 @@ export default function DriverItemsTable({
     },
     {
       key: 'amount',
+      important: true,
       header: 'Amount',
       align: 'right',
       sortable: true,
@@ -113,6 +115,7 @@ export default function DriverItemsTable({
     },
     {
       key: 'status',
+      important: true,
       header: 'Status',
       render: (i) => <StatusBadge status={i.status === 'VOID' ? 'CANCELLED' : 'ACTIVE'} />,
     },

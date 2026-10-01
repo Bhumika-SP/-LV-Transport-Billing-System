@@ -51,7 +51,9 @@ export default function PaymentsTable({ driverId }) {
 
   const columns = [
     { key: 'paymentDate', header: 'Date', render: (p) => formatDate(p.paymentDate) },
-    ...(driverId ? [] : [{ key: 'driver', header: 'Driver', render: (p) => p.driver.fullName }]),
+    ...(driverId
+      ? []
+      : [{ key: 'driver', important: true, header: 'Driver', render: (p) => p.driver.fullName }]),
     {
       key: 'settlement',
       header: 'Settlement',
@@ -65,6 +67,7 @@ export default function PaymentsTable({ driverId }) {
     { key: 'referenceNumber', header: 'Reference' },
     {
       key: 'amount',
+      important: true,
       header: 'Amount',
       align: 'right',
       render: (p) => (
@@ -75,6 +78,7 @@ export default function PaymentsTable({ driverId }) {
     },
     {
       key: 'status',
+      important: true,
       header: 'Status',
       render: (p) => <StatusBadge status={p.status === 'REVERSED' ? 'CANCELLED' : 'ACTIVE'} />,
     },

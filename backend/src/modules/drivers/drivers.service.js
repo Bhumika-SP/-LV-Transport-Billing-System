@@ -32,14 +32,52 @@ function maskAccount(driver) {
   return { ...driver, bankAccountNumber: `••••${driver.bankAccountNumber.slice(-4)}` };
 }
 
-export async function listDrivers({ page, pageSize, search, sortBy, sortDir, status }) {
+/** Licences expiring within this many days are flagged "expiring soon". */
+const LICENCE_WARNING_DAYS = 30;
+
+function licenceWhere(licenceStatus) {
+  if (!licenceStatus) return {};
+  const today = parseDateOnly(todayInBusinessTz());
+  const soon = new Date(today);
+  soon.setUTCDate(soon.getUTCDate() + LICENCE_WARNING_DAYS);
+  return {
+    none: { licenseExpiryDate: null },
+    expired: { licenseExpiryDate: { lt: today } },
+    expiring: { licenseExpiryDate: { gte: today, lte: soon } },
+    valid: { licenseExpiryDate: { gt: soon } },
+  }[licenceStatus];
+}
+
+export async function listDrivers({
+  page,
+  pageSize,
+  search,
+  sortBy,
+  sortDir,
+  status,
+  licenceStatus,
+  assigned,
+  joinedFrom,
+  joinedTo,
+}) {
+  const today = parseDateOnly(todayInBusinessTz());
   const where = {
     ...(status && { status }),
+    ...licenceWhere(licenceStatus),
+    ...(assigned && {
+      assignments: { [assigned === 'yes' ? 'some' : 'none']: activeOnWhere(today) },
+    }),
+    ...((joinedFrom || joinedTo) && {
+      joiningDate: {
+        ...(joinedFrom && { gte: parseDateOnly(joinedFrom) }),
+        ...(joinedTo && { lte: parseDateOnly(joinedTo) }),
+      },
+    }),
     ...(search && {
       OR: [
         { fullName: { contains: search } },
         { driverCode: { contains: search } },
-        { phone: { contains: search } },
+        { phone: { contains: search.replace(/[\s-]/g, '') || search } },
         { licenseNumber: { contains: search } },
       ],
     }),
@@ -50,7 +88,23 @@ export async function listDrivers({ page, pageSize, search, sortBy, sortDir, sta
     page,
     pageSize,
   });
-  return { ...result, items: result.items.map(maskAccount) };
+  // One extra query for the vehicles currently assigned to the drivers on this page.
+  const current = await prisma.driverAssignment.findMany({
+    where: { driverId: { in: result.items.map((d) => d.id) }, ...activeOnWhere(today) },
+    orderBy: { startDate: 'asc' },
+    select: {
+      driverId: true,
+      vehicle: { select: { id: true, registrationNumber: true } },
+    },
+  });
+  const vehicleByDriver = new Map(current.map((a) => [a.driverId, a.vehicle]));
+  return {
+    ...result,
+    items: result.items.map((d) => ({
+      ...maskAccount(d),
+      currentVehicle: vehicleByDriver.get(d.id) ?? null,
+    })),
+  };
 }
 
 export function driverOptions({ includeInactive }) {

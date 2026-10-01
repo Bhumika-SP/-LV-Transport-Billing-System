@@ -18,10 +18,16 @@ import { STATUS_OPTIONS } from '../../lib/forms';
 import VehicleTypeFormModal from './VehicleTypeFormModal';
 
 const COLUMNS = [
-  { key: 'name', header: 'Vehicle type', sortable: true, className: 'font-medium text-slate-900' },
+  {
+    key: 'name',
+    important: true,
+    header: 'Vehicle type',
+    sortable: true,
+  },
   { key: 'description', header: 'Description' },
   {
     key: 'currentRate',
+    important: true,
     header: 'Current rate / km',
     align: 'right',
     render: (t) =>
@@ -39,6 +45,7 @@ const COLUMNS = [
   { key: 'vehicleCount', header: 'Vehicles', align: 'right' },
   {
     key: 'status',
+    important: true,
     header: 'Status',
     sortable: true,
     render: (t) => <StatusBadge status={t.status} />,

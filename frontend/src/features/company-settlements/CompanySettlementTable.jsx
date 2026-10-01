@@ -19,6 +19,7 @@ import { toSelect, useOptions } from '../../hooks/useOptions';
 import { del, get, post } from '../../lib/api';
 import { formatDate, formatINR, formatMonth } from '../../lib/format';
 import { paymentMethodLabel } from '../../lib/forms';
+import { DocumentsButton } from '../documents/DocumentsPanel';
 import {
   CorrectModal,
   CreateSettlementModal,
@@ -121,6 +122,7 @@ export default function CompanySettlementTable({ companyId }) {
       : [
           {
             key: 'company',
+            important: true,
             header: 'Company',
             render: (s) => (
               <Link to={`/companies/${s.company.id}`} className="text-brand-700 hover:underline">
@@ -138,6 +140,7 @@ export default function CompanySettlementTable({ companyId }) {
     },
     {
       key: 'receivedAmount',
+      important: true,
       header: 'Received',
       align: 'right',
       sortable: true,
@@ -165,7 +168,12 @@ export default function CompanySettlementTable({ companyId }) {
           </span>
         ),
     },
-    { key: 'status', header: 'Status', render: (s) => <StatusBadge status={s.status} /> },
+    {
+      key: 'status',
+      important: true,
+      header: 'Status',
+      render: (s) => <StatusBadge status={s.status} />,
+    },
     {
       key: 'receivedDate',
       header: 'Received on',

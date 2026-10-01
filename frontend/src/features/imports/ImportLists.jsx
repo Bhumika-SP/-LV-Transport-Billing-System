@@ -57,7 +57,7 @@ export function ImportHistory() {
         columns={[
           { key: 'id', header: '#' },
           { key: 'createdAt', header: 'Uploaded', render: (b) => formatDateTime(b.createdAt) },
-          { key: 'company', header: 'Company', render: (b) => b.company.name },
+          { key: 'company', important: true, header: 'Company', render: (b) => b.company.name },
           { key: 'fileName', header: 'File', className: 'max-w-xs truncate' },
           { key: 'template', header: 'Template', render: (b) => b.template?.name ?? '—' },
           { key: 'totalRows', header: 'Rows', align: 'right', render: (b) => n(b.totalRows) },
@@ -74,7 +74,12 @@ export function ImportHistory() {
             align: 'right',
             render: (b) => n(b.duplicateRows),
           },
-          { key: 'status', header: 'Status', render: (b) => <StatusBadge status={b.status} /> },
+          {
+            key: 'status',
+            important: true,
+            header: 'Status',
+            render: (b) => <StatusBadge status={b.status} />,
+          },
           { key: 'uploadedBy', header: 'By', render: (b) => b.uploadedBy?.name ?? '—' },
         ]}
       />

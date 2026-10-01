@@ -43,6 +43,7 @@ function AssignmentList({ kind }) {
   const columns = [
     ...k.parties.map((p) => ({
       key: p.field,
+      important: true,
       header: p.label,
       render: (a) => {
         const { to, label } = LINKS[p.field](a);
@@ -62,6 +63,7 @@ function AssignmentList({ kind }) {
     },
     {
       key: 'periodStatus',
+      important: true,
       header: 'Status',
       render: (a) => <StatusBadge status={a.periodStatus} />,
     },

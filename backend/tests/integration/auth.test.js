@@ -30,6 +30,18 @@ describe('authentication', () => {
     expect(cookie).toMatch(/SameSite=Lax/i);
   });
 
+  it('"Remember me" keeps the session for REMEMBER_SESSION_DAYS instead of SESSION_HOURS', async () => {
+    const maxAge = async (rememberMe) => {
+      const res = await newAgent(app)
+        .post('/api/auth/login')
+        .send({ email: 'admin@test.local', password: TEST_PASSWORD, rememberMe });
+      expect(res.status).toBe(200);
+      return Number(/Max-Age=(\d+)/i.exec(res.headers['set-cookie'][0])[1]);
+    };
+    expect(await maxAge(false)).toBe(8 * 3600);
+    expect(await maxAge(true)).toBe(7 * 24 * 3600);
+  });
+
   it('rejects a wrong password and an unknown email with the same response', async () => {
     const wrong = await newAgent(app)
       .post('/api/auth/login')

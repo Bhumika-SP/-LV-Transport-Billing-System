@@ -135,7 +135,7 @@ function Records() {
   });
   const columns = [
     { key: 'invoiceDate', header: 'Date', render: (r) => formatDate(r.invoiceDate) },
-    { key: 'invoiceNumber', header: 'Invoice' },
+    { key: 'invoiceNumber', important: true, header: 'Invoice' },
     {
       key: 'direction',
       header: 'Direction',
@@ -153,12 +153,14 @@ function Records() {
     { key: 'totalTax', header: 'Tax', align: 'right', render: (r) => formatINR(r.totalTax) },
     {
       key: 'invoiceValue',
+      important: true,
       header: 'Invoice value',
       align: 'right',
       render: (r) => formatINR(r.invoiceValue),
     },
     {
       key: 'status',
+      important: true,
       header: 'Status',
       render: (r) => <StatusBadge status={r.status === 'VOID' ? 'CANCELLED' : 'ACTIVE'} />,
     },

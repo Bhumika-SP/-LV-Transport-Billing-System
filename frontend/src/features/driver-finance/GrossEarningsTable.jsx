@@ -30,6 +30,7 @@ export default function GrossEarningsTable({ driverId, month, onMonthChange }) {
         }
       : {
           key: 'driver',
+          important: true,
           header: 'Driver',
           render: (r) => (
             <Link
@@ -57,6 +58,7 @@ export default function GrossEarningsTable({ driverId, month, onMonthChange }) {
     },
     {
       key: 'grossEarnings',
+      important: true,
       header: '= Gross earnings',
       align: 'right',
       render: (r) => <span className="font-semibold">{formatINR(r.grossEarnings)}</span>,

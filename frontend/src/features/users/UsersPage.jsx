@@ -42,10 +42,20 @@ export default function UsersPage() {
   });
 
   const columns = [
-    { key: 'name', header: 'Name', sortable: true, className: 'font-medium text-slate-900' },
+    {
+      key: 'name',
+      important: true,
+      header: 'Name',
+      sortable: true,
+    },
     { key: 'email', header: 'Email', sortable: true },
-    { key: 'role', header: 'Role', render: (u) => u.role.name },
-    { key: 'status', header: 'Status', render: (u) => <StatusBadge status={u.status} /> },
+    { key: 'role', important: true, header: 'Role', render: (u) => u.role.name },
+    {
+      key: 'status',
+      important: true,
+      header: 'Status',
+      render: (u) => <StatusBadge status={u.status} />,
+    },
     {
       key: 'lastLoginAt',
       header: 'Last login',

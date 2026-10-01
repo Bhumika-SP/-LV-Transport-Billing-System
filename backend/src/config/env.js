@@ -29,6 +29,8 @@ export const envSchema = z
     // Authentication
     JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
     SESSION_HOURS: z.coerce.number().positive().max(24).default(8),
+    // Session length when "Remember me" is ticked at login.
+    REMEMBER_SESSION_DAYS: z.coerce.number().positive().max(30).default(7),
     COOKIE_SAMESITE: z.enum(['lax', 'strict', 'none']).default('lax'),
     COOKIE_SECURE: booleanString,
     LOGIN_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),

@@ -310,6 +310,7 @@ export default function AdvancesTable({ driverId }) {
               : [
                   {
                     key: 'driver',
+                    important: true,
                     header: 'Driver',
                     render: (a) => (
                       <Link
@@ -337,6 +338,7 @@ export default function AdvancesTable({ driverId }) {
             },
             {
               key: 'outstandingAmount',
+              important: true,
               header: 'Outstanding',
               align: 'right',
               render: (a) => <span className="font-medium">{formatINR(a.outstandingAmount)}</span>,
@@ -346,7 +348,12 @@ export default function AdvancesTable({ driverId }) {
               header: 'Paid by',
               render: (a) => paymentMethodLabel(a.paymentMethod),
             },
-            { key: 'status', header: 'Status', render: (a) => <StatusBadge status={a.status} /> },
+            {
+              key: 'status',
+              important: true,
+              header: 'Status',
+              render: (a) => <StatusBadge status={a.status} />,
+            },
           ]}
         />
         <Pagination meta={list.data?.meta} onPageChange={(page) => update({ page })} />

@@ -17,13 +17,19 @@ import { STATUS_OPTIONS } from '../../lib/forms';
 import CompanyFormModal from './CompanyFormModal';
 
 const COLUMNS = [
-  { key: 'name', header: 'Company', sortable: true, className: 'font-medium text-slate-900' },
+  {
+    key: 'name',
+    important: true,
+    header: 'Company',
+    sortable: true,
+  },
   { key: 'code', header: 'Code', sortable: true },
   { key: 'contactPerson', header: 'Contact' },
   { key: 'phone', header: 'Phone' },
   { key: 'gstin', header: 'GSTIN' },
   {
     key: 'status',
+    important: true,
     header: 'Status',
     sortable: true,
     render: (c) => <StatusBadge status={c.status} />,

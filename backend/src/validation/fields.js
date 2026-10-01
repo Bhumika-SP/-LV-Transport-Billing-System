@@ -14,7 +14,9 @@ const optional = (schema) =>
 export const phone = z
   .string()
   .trim()
-  .regex(/^\+?[0-9][0-9\s-]{6,14}$/, 'Enter a valid phone number');
+  .regex(/^\+?[0-9][0-9\s-]{6,14}$/, 'Enter a valid phone number')
+  // Stored without spaces or hyphens: 9000000004, +918041167000.
+  .transform((v) => v.replace(/[\s-]/g, ''));
 
 export const optionalPhone = optional(phone);
 

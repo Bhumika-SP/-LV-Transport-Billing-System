@@ -50,4 +50,8 @@ export const listDriversQuery = listQuery(
   'fullName',
 ).extend({
   status: statusEnum.optional(),
+  licenceStatus: z.enum(['valid', 'expiring', 'expired', 'none']).optional(),
+  assigned: z.enum(['yes', 'no']).optional(),
+  joinedFrom: optionalDate,
+  joinedTo: optionalDate,
 });

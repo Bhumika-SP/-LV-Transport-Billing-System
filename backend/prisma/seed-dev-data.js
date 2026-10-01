@@ -35,13 +35,13 @@ import { createVehicleType } from '../src/modules/vehicle-types/vehicle-types.se
 import { createVehicle } from '../src/modules/vehicles/vehicles.service.js';
 
 const COMPANIES = [
-  { name: 'Infosys', code: 'INFY', contactPerson: 'Transport Desk (DEV)', phone: '080 0000 0001' },
-  { name: 'Wipro', code: 'WIPRO', contactPerson: 'Admin Office (DEV)', phone: '080 0000 0002' },
+  { name: 'Infosys', code: 'INFY', contactPerson: 'Transport Desk', phone: '08000000001' },
+  { name: 'Wipro', code: 'WIPRO', contactPerson: 'Admin Office', phone: '08000000002' },
   {
     name: 'Tech Mahindra',
     code: 'TECHM',
-    contactPerson: 'Facilities (DEV)',
-    phone: '080 0000 0003',
+    contactPerson: 'Facilities',
+    phone: '08000000003',
   },
 ];
 
@@ -69,39 +69,39 @@ const TYPES = [
 
 const DRIVERS = [
   {
-    fullName: 'Ravi Kumar (DEV)',
-    phone: '90000 00001',
-    licenseNumber: 'DEV-DL-0001',
+    fullName: 'Ravi Kumar',
+    phone: '9000000001',
+    licenseNumber: 'KA0120190004127',
     joiningDate: '2025-04-01',
   },
   {
-    fullName: 'Suresh Babu (DEV)',
-    phone: '90000 00002',
-    licenseNumber: 'DEV-DL-0002',
+    fullName: 'Suresh Babu',
+    phone: '9000000002',
+    licenseNumber: 'KA0220180031562',
     joiningDate: '2025-05-15',
   },
   {
-    fullName: 'Manjunath R (DEV)',
-    phone: '90000 00003',
-    licenseNumber: 'DEV-DL-0003',
+    fullName: 'Manjunath R',
+    phone: '9000000003',
+    licenseNumber: 'KA0320170018840',
     joiningDate: '2025-07-01',
   },
   {
-    fullName: 'Imran Pasha (DEV)',
-    phone: '90000 00004',
-    licenseNumber: 'DEV-DL-0004',
+    fullName: 'Imran Pasha',
+    phone: '9000000004',
+    licenseNumber: 'KA0120210007795',
     joiningDate: '2025-08-10',
   },
   {
-    fullName: 'Prakash N (DEV)',
-    phone: '90000 00005',
-    licenseNumber: 'DEV-DL-0005',
+    fullName: 'Prakash N',
+    phone: '9000000005',
+    licenseNumber: 'KA0420160052318',
     joiningDate: '2025-09-01',
   },
   {
-    fullName: 'Venkatesh S (DEV)',
-    phone: '90000 00006',
-    licenseNumber: 'DEV-DL-0006',
+    fullName: 'Venkatesh S',
+    phone: '9000000006',
+    licenseNumber: 'KA0520220009164',
     joiningDate: '2026-01-05',
   },
 ];
@@ -164,9 +164,9 @@ async function seedMasterData(actor) {
 
 /** [company code, month, expected, received (null = still PENDING), received date, method, ref] */
 const COMPANY_SETTLEMENTS = [
-  ['INFY', '2026-08', '2450000.00', '2450000.00', '2026-09-05', 'BANK_TRANSFER', 'DEV-UTR-0801'],
-  ['WIPRO', '2026-08', '1200000.00', '1180000.00', '2026-09-07', 'CHEQUE', 'DEV-CHQ-0802'],
-  ['TECHM', '2026-08', '600000.00', '600000.00', '2026-09-10', 'UPI', 'DEV-UPI-0803'],
+  ['INFY', '2026-08', '2450000.00', '2450000.00', '2026-09-05', 'BANK_TRANSFER', 'UTR-0801'],
+  ['WIPRO', '2026-08', '1200000.00', '1180000.00', '2026-09-07', 'CHEQUE', 'CHQ-0802'],
+  ['TECHM', '2026-08', '600000.00', '600000.00', '2026-09-10', 'UPI', 'UPI-0803'],
   // Scenario §79 starting point: Infosys September expected 25,00,000, still PENDING.
   ['INFY', '2026-09', '2500000.00', null],
   ['WIPRO', '2026-09', '1250000.00', null],
@@ -232,9 +232,9 @@ async function seedTrips(actor) {
             driverId,
             vehicleId: vehicle.id,
             tripDate,
-            externalTripId: `${company.code}-DEV-${month.replace('-', '')}-${v + 1}${String(day).padStart(2, '0')}`,
-            pickup: 'Office Campus (DEV)',
-            dropLocation: 'Employee Drop Zone (DEV)',
+            externalTripId: `${company.code}-${month.replace('-', '')}-${v + 1}${String(day).padStart(2, '0')}`,
+            pickup: 'Electronic City Phase 1, Bengaluru',
+            dropLocation: 'Majestic Bus Stand, Bengaluru',
             kmSource: useStartEnd ? 'START_END' : 'DIRECT',
             ...(useStartEnd
               ? { startKm: String(startKm), endKm: String(startKm + km) }
@@ -265,7 +265,7 @@ async function seedEarnings(actor) {
           type: 'ALLOWANCE',
           amount: '1000.00',
           earningDate: `${month}-25`,
-          description: 'Night shift allowance (DEV)',
+          description: 'Night shift allowance',
         },
         actor,
       );
@@ -277,7 +277,7 @@ async function seedEarnings(actor) {
             type: 'OTHER_EARNING',
             amount: '500.00',
             earningDate: `${month}-26`,
-            description: 'Festival incentive (DEV)',
+            description: 'Festival incentive',
           },
           actor,
         );
@@ -291,7 +291,7 @@ async function seedEarnings(actor) {
       type: 'POSITIVE_ADJUSTMENT',
       amount: '250.00',
       adjustmentDate: '2026-09-27',
-      reason: 'Zero-complaint bonus (DEV)',
+      reason: 'Zero-complaint bonus',
     },
     actor,
   );
@@ -309,10 +309,10 @@ async function seedExpensesAndAdvances(actor) {
   for (const month of ['2026-08', '2026-09']) {
     for (const [i, { driverId, vehicleId }] of pairs.entries()) {
       const lv = [
-        ['FUEL', 4000 + i * 250, 'Diesel (fuel card) (DEV)'],
-        ['TOLL', 600 + i * 50, 'FASTag tolls (DEV)'],
-        ['EMI', '3000', 'Vehicle loan EMI (DEV)'],
-        ...(i % 2 === 0 ? [['MAINTENANCE', '1500', 'Periodic service (DEV)']] : []),
+        ['FUEL', 4000 + i * 250, 'Diesel (fuel card)'],
+        ['TOLL', 600 + i * 50, 'FASTag tolls'],
+        ['EMI', '3000', 'Vehicle loan EMI'],
+        ...(i % 2 === 0 ? [['MAINTENANCE', '1500', 'Periodic service']] : []),
       ];
       for (const [category, amount, description] of lv) {
         await lvExpensesService.create(
@@ -336,8 +336,8 @@ async function seedExpensesAndAdvances(actor) {
             category: 'FUEL',
             amount: '2000',
             expenseDate: `${month}-14`,
-            description: 'Paid fuel in cash on outstation trip (DEV)',
-            receiptReference: `DEV-BILL-${month}-${i + 1}`,
+            description: 'Paid fuel in cash on outstation trip',
+            receiptReference: `BILL-${month}-${i + 1}`,
           },
           actor,
         );
@@ -352,9 +352,9 @@ async function seedExpensesAndAdvances(actor) {
       driverId: pairs[0].driverId,
       amount: '20000',
       advanceDate: '2026-07-15',
-      reason: 'Medical emergency (DEV)',
+      reason: 'Medical emergency',
       paymentMethod: 'BANK_TRANSFER',
-      referenceNumber: 'DEV-UTR-ADV-1',
+      referenceNumber: 'UTR-ADV-1',
     },
     actor,
   );
@@ -366,7 +366,7 @@ async function seedExpensesAndAdvances(actor) {
       type: 'OTHER_DEDUCTION',
       amount: '2000',
       adjustmentDate: '2026-09-18',
-      reason: 'Previous overpayment (DEV)',
+      reason: 'Previous overpayment',
     },
     actor,
   );
@@ -419,7 +419,7 @@ async function seedPayments(actor) {
         amount: amount.toFixed(2),
         paymentDate: '2026-09-07',
         paymentMethod: methods[i],
-        referenceNumber: `DEV-PAY-${s.id}`,
+        referenceNumber: `PAY-${s.id}`,
       },
       actor,
     );
@@ -463,7 +463,7 @@ async function seedGst(actor) {
         companyId: c.id,
         counterpartyName: c.name,
         counterpartyGstin: c.gstin ?? undefined,
-        invoiceNumber: `LV/26-27/DEV-${n}`,
+        invoiceNumber: `LV/26-27/${n}`,
         invoiceDate: '2026-08-31',
         hsnSac: '996601',
         taxableValue: String(250000 * n),

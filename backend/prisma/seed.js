@@ -15,9 +15,9 @@ import { syncRolesAndPermissions } from '../src/modules/auth/rbac.js';
 import { seedDevelopmentData } from './seed-dev-data.js';
 
 const DEV_USERS = [
-  { name: 'Dev Admin (Manager)', email: 'admin@lvtransport.dev', role: ROLES.ADMIN },
-  { name: 'Dev Biller (Operator)', email: 'biller@lvtransport.dev', role: ROLES.BILLER },
-  { name: 'Dev Auditor (Finance)', email: 'auditor@lvtransport.dev', role: ROLES.AUDITOR },
+  { name: 'Rajesh Kulkarni', email: 'admin@lvtransport.dev', role: ROLES.ADMIN },
+  { name: 'Anitha Prakash', email: 'biller@lvtransport.dev', role: ROLES.BILLER },
+  { name: 'Sandeep Rao', email: 'auditor@lvtransport.dev', role: ROLES.AUDITOR },
 ];
 
 async function seedDevUsers(password) {

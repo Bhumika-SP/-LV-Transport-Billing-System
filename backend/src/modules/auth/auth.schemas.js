@@ -8,6 +8,7 @@ export const PASSWORD_RULE = z
 export const loginSchema = z.object({
   email: z.string().trim().email('Enter a valid email').max(191),
   password: z.string().min(1, 'Password is required').max(128),
+  rememberMe: z.boolean().optional(),
 });
 
 export const changePasswordSchema = z

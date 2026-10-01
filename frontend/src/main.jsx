@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import App from './App';
+import ErrorBoundary from './components/ErrorBoundary';
 import { ME_QUERY_KEY } from './auth/auth-context';
 import AuthProvider from './auth/AuthProvider';
 import './index.css';
@@ -30,7 +31,9 @@ createRoot(document.getElementById('root')).render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
-          <App />
+          <ErrorBoundary>
+            <App />
+          </ErrorBoundary>
         </AuthProvider>
         <Toaster position="top-right" richColors closeButton />
       </BrowserRouter>
