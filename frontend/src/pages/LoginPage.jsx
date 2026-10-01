@@ -70,6 +70,7 @@ function LoginForm({ stage }) {
     defaultValues: { email: '', password: '', rememberMe: false },
   });
 
+
   const onSubmit = async (values) => {
     setFormError(null);
     try {
@@ -80,9 +81,7 @@ function LoginForm({ stage }) {
     }
   };
 
-  const inputClass = `block w-full rounded-xl border border-[#e1e8f2] bg-[#f6f8fc] pl-[52px] text-[#0f2a5c] placeholder:text-[#8a98b3] transition-shadow focus:border-[#1a6fd6] focus:ring-4 focus:ring-[#1a6fd6]/15 focus:outline-none aria-[invalid=true]:border-red-500 ${
-    stage ? 'h-[64px] text-[22px]' : 'h-[56px] text-[18px]'
-  }`;
+
   const iconClass =
     'pointer-events-none absolute top-1/2 left-[18px] h-[22px] w-[22px] -translate-y-1/2 text-[#6b7a90]';
   const labelHack =
@@ -138,6 +137,7 @@ function LoginForm({ stage }) {
               <input
                 {...p}
                 className={`${inputClass} pr-4`}
+
                 type="email"
                 autoComplete="username"
                 placeholder="Enter your email address"
@@ -153,6 +153,7 @@ function LoginForm({ stage }) {
               <input
                 {...p}
                 className={`${inputClass} pr-14`}
+
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
                 placeholder="Enter your password"
