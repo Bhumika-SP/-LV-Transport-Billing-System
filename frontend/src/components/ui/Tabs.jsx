@@ -9,11 +9,9 @@ export default function Tabs({ tabs }) {
   const activeKey = tabs.some((t) => t.key === params.get('tab')) ? params.get('tab') : tabs[0].key;
   const active = tabs.find((t) => t.key === activeKey);
 
-  const select = (key) => {
-    const next = new URLSearchParams(params);
-    next.set('tab', key);
-    setParams(next, { replace: true });
-  };
+  // Each tab starts with clean list settings: a sort/filter/page chosen on one tab must not
+  // leak into another tab's list request (it can be invalid there, e.g. a different sort column).
+  const select = (key) => setParams({ tab: key }, { replace: true });
 
   return (
     <div>

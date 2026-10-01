@@ -21,7 +21,7 @@ export function listCompanies({ page, pageSize, search, sortBy, sortDir, status 
         { code: { contains: search } },
         { contactPerson: { contains: search } },
         { gstin: { contains: search } },
-        { phone: { contains: search } },
+        { phone: { contains: search.replace(/[\s-]/g, '') || search } },
       ],
     }),
   };

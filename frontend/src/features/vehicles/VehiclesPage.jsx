@@ -20,9 +20,9 @@ import VehicleFormModal from './VehicleFormModal';
 const COLUMNS = [
   {
     key: 'registrationNumber',
+    important: true,
     header: 'Registration',
     sortable: true,
-    className: 'font-medium text-slate-900',
   },
   { key: 'vehicleType', header: 'Type', render: (v) => v.vehicleType.name },
   {
@@ -38,11 +38,13 @@ const COLUMNS = [
   },
   {
     key: 'currentDriver',
+    important: true,
     header: 'Current driver',
     render: (v) => v.currentDriver?.fullName ?? '—',
   },
   {
     key: 'status',
+    important: true,
     header: 'Status',
     sortable: true,
     render: (v) => <StatusBadge status={v.status} />,

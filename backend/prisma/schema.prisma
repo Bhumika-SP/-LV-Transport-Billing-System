@@ -10,7 +10,8 @@
 // Models are added phase by phase according to docs/DATABASE.md.
 
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
+  engineType = "client" // Rust-free client + driver adapter: no native query engine (runs on Windows ARM64)
 }
 
 datasource db {

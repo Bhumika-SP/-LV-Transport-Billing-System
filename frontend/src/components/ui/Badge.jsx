@@ -9,7 +9,7 @@ const TONES = {
 /** Status -> tone. Unknown statuses render gray. */
 const STATUS_TONES = {
   ACTIVE: 'green',
-  INACTIVE: 'gray',
+  INACTIVE: 'red',
   PENDING: 'amber',
   RECEIVED: 'green',
   CANCELLED: 'red',

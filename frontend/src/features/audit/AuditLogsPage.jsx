@@ -27,14 +27,16 @@ export default function AuditLogsPage() {
 
   const columns = [
     { key: 'createdAt', header: 'When', render: (l) => formatDateTime(l.createdAt) },
-    { key: 'user', header: 'User', render: (l) => l.user?.name ?? 'System' },
+    { key: 'user', important: true, header: 'User', render: (l) => l.user?.name ?? 'System' },
     {
       key: 'action',
+      important: true,
       header: 'Action',
       render: (l) => <Badge tone={actionTone(l.action)}>{l.action}</Badge>,
     },
     {
       key: 'entity',
+      important: true,
       header: 'Record',
       render: (l) => (
         <button

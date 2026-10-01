@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import { ZodError } from 'zod';
 import { env } from '../config/env.js';
 import { AppError } from '../utils/AppError.js';
+import { uniqueTarget } from '../utils/records.js';
 
 /** Map known library errors onto AppError so clients always get a stable code. */
 function normalize(err) {
@@ -20,7 +21,7 @@ function normalize(err) {
       return AppError.conflict(
         'A record with the same unique value already exists',
         'DUPLICATE_RECORD',
-        { target: err.meta?.target },
+        { target: uniqueTarget(err) },
       );
     }
     if (err.code === 'P2025') return AppError.notFound('Record not found', 'RECORD_NOT_FOUND');

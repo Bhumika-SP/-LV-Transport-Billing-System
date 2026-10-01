@@ -28,6 +28,7 @@ describe('master data: companies, drivers, vehicles', () => {
       expect(res.status).toBe(201);
       expect(res.body.data).toMatchObject({
         code: 'INFY',
+        phone: '+918041167000',
         gstin: '29AABCI1234H1Z5',
         status: 'ACTIVE',
       });
@@ -67,6 +68,7 @@ describe('master data: companies, drivers, vehicles', () => {
       expect(res.body.data).toMatchObject({
         contactPerson: 'Ravi',
         code: 'INFY',
+        phone: '+918041167000',
         gstin: '29AABCI1234H1Z5',
       });
     });
@@ -124,6 +126,37 @@ describe('master data: companies, drivers, vehicles', () => {
       const res = await as.biller.post('/api/drivers').send({ ...ravi, fullName: 'Other' });
       expect(res.status).toBe(409);
       expect(res.body.details[0].path).toBe('licenseNumber');
+    });
+
+    it('filters by licence status, vehicle assignment and joining date', async () => {
+      const day = (offset) => {
+        const d = new Date();
+        d.setUTCDate(d.getUTCDate() + offset);
+        return d.toISOString().slice(0, 10);
+      };
+      const make = (n, licenseExpiryDate, joiningDate = '2025-06-01') =>
+        as.biller.post('/api/drivers').send({
+          fullName: `Driver ${n}`,
+          phone: `98765432${n}0`,
+          licenseNumber: `KA010000000${n}`,
+          licenseExpiryDate,
+          joiningDate,
+        });
+      await make(1, day(200));
+      await make(2, day(10), '2026-02-01');
+      await make(3, day(-5));
+      const names = async (q) =>
+        (await as.biller.get(`/api/drivers?${q}`)).body.data.map((d) => d.fullName).sort();
+
+      expect(await names('search=98765 43210')).toEqual(['Driver 1']);
+      expect(await names('licenceStatus=valid')).toEqual(['Driver 1']);
+      expect(await names('licenceStatus=expiring')).toEqual(['Driver 2']);
+      expect(await names('licenceStatus=expired')).toEqual(['Driver 3']);
+      expect(await names('joinedFrom=2026-01-01')).toEqual(['Driver 2']);
+      expect(await names('assigned=no')).toEqual(['Driver 1', 'Driver 2', 'Driver 3']);
+      expect(await names('assigned=yes')).toEqual([]);
+      const list = await as.biller.get('/api/drivers');
+      expect(list.body.data[0]).toHaveProperty('currentVehicle', null);
     });
 
     it('masks bank account numbers in lists but not in detail', async () => {

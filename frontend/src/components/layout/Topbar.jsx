@@ -38,7 +38,8 @@ function UserMenu() {
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-slate-100"
+        title="Account menu"
+        className="flex items-center gap-2 rounded-xl px-2 py-1.5 transition-colors hover:bg-slate-100"
       >
         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-800">
           {initials}
@@ -53,7 +54,7 @@ function UserMenu() {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 z-30 mt-1 w-56 rounded-md border border-slate-200 bg-white py-1 shadow-lg"
+          className="animate-menu absolute right-0 z-30 mt-1 w-56 rounded-xl border border-slate-200 bg-white py-1 shadow-lg"
         >
           <div className="border-b border-slate-100 px-3 py-2 text-xs text-slate-500">
             {user.email}
@@ -90,15 +91,26 @@ function UserMenu() {
 export default function Topbar({ onMenuClick }) {
   return (
     <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 lg:px-6">
-      <button
-        type="button"
-        className="rounded p-2 text-slate-600 hover:bg-slate-100 lg:hidden"
-        onClick={onMenuClick}
-        aria-label="Open navigation"
-      >
-        <Menu className="h-5 w-5" />
-      </button>
-      <div className="hidden text-sm text-slate-500 lg:block">LV Transport</div>
+      <div className="flex items-center gap-4 lg:gap-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-600 to-brand-800 text-sm font-bold text-white shadow-sm">
+            LV
+          </div>
+          <div className="leading-tight">
+            <div className="text-sm font-semibold text-slate-900">LV Transport</div>
+            <div className="text-xs text-slate-500">Billing System</div>
+          </div>
+        </div>
+        <button
+          type="button"
+          className="rounded-md p-2 text-slate-600 transition-colors hover:bg-slate-100"
+          onClick={onMenuClick}
+          aria-label="Toggle navigation"
+          title="Toggle navigation"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+      </div>
 
       <div className="flex items-center gap-2">
         <NotificationBell />

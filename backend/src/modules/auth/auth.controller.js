@@ -4,7 +4,7 @@ import { clearSessionCookie, setSessionCookie } from './session.js';
 
 export async function login(req, res) {
   const user = await authService.login(req.valid.body, req);
-  setSessionCookie(res, user);
+  setSessionCookie(res, user, { remember: req.valid.body.rememberMe });
   ok(res, authService.toSessionUser(user));
 }
 

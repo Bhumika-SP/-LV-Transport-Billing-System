@@ -18,16 +18,16 @@ export default function Modal({ open, onClose, title, size = 'md', children, foo
   if (!open) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/50 p-4 sm:items-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-3 sm:p-4">
       <div
         ref={panelRef}
         tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className={`w-full ${WIDTHS[size]} rounded-lg bg-white shadow-xl outline-none`}
+        className={`flex max-h-full w-full ${WIDTHS[size]} flex-col rounded-xl bg-white shadow-xl outline-none`}
       >
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-5 py-4">
           <h2 id="modal-title" className="text-base font-semibold text-slate-900">
             {title}
           </h2>
@@ -40,9 +40,11 @@ export default function Modal({ open, onClose, title, size = 'md', children, foo
             <X className="h-5 w-5" />
           </button>
         </div>
-        <div className="px-5 py-4">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">{children}</div>
         {footer && (
-          <div className="flex justify-end gap-2 border-t border-slate-200 px-5 py-3">{footer}</div>
+          <div className="flex shrink-0 justify-end gap-2 border-t border-slate-200 px-5 py-3">
+            {footer}
+          </div>
         )}
       </div>
     </div>,

@@ -47,7 +47,7 @@ const FINANCE = [ROLES.ADMIN, ROLES.AUDITOR];
  */
 export const NAV_SECTIONS = [
   {
-    title: null,
+    title: 'Main',
     items: [{ label: 'Dashboard', path: '/', icon: LayoutDashboard, phase: 12 }],
   },
   {

@@ -101,6 +101,12 @@ export default function DriverDetailPage() {
         backTo="/drivers"
         backLabel="Drivers"
         title={driver.fullName}
+        avatar={driver.fullName
+          .split(/\s+/)
+          .map((w) => w[0])
+          .slice(0, 2)
+          .join('')
+          .toUpperCase()}
         status={driver.status}
         subtitle={`${driver.driverCode} · ${driver.phone}`}
         actions={

@@ -1,7 +1,8 @@
 import { Loader2 } from 'lucide-react';
 
 const VARIANTS = {
-  primary: 'bg-brand-700 text-white hover:bg-brand-800 disabled:bg-brand-700/60',
+  primary:
+    'bg-gradient-to-r from-brand-600 to-brand-800 text-white shadow-sm hover:from-brand-700 hover:to-brand-900 disabled:opacity-60',
   secondary:
     'border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 disabled:text-slate-400',
   danger: 'bg-red-600 text-white hover:bg-red-700 disabled:bg-red-600/60',

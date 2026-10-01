@@ -66,7 +66,7 @@ export default function TripTable({ fixed = {} }) {
       : [{ key: 'company', header: 'Company', render: (t) => t.company.name }]),
     ...(fixed.driverId
       ? []
-      : [{ key: 'driver', header: 'Driver', render: (t) => t.driver.fullName }]),
+      : [{ key: 'driver', important: true, header: 'Driver', render: (t) => t.driver.fullName }]),
     ...(fixed.vehicleId
       ? []
       : [{ key: 'vehicle', header: 'Vehicle', render: (t) => t.vehicle.registrationNumber }]),
@@ -92,6 +92,7 @@ export default function TripTable({ fixed = {} }) {
     { key: 'ratePerKm', header: 'Rate', align: 'right', render: (t) => formatINR(t.ratePerKm) },
     {
       key: 'earnings',
+      important: true,
       header: 'Earnings',
       align: 'right',
       sortable: true,
@@ -103,6 +104,7 @@ export default function TripTable({ fixed = {} }) {
     },
     {
       key: 'status',
+      important: true,
       header: 'Status',
       render: (t) =>
         t.status === 'CANCELLED' ? (

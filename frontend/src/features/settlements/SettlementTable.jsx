@@ -109,6 +109,7 @@ export default function SettlementTable({ driverId }) {
       : [
           {
             key: 'driver',
+            important: true,
             header: 'Driver',
             render: (s) => (
               <Link
@@ -135,12 +136,18 @@ export default function SettlementTable({ driverId }) {
     },
     {
       key: 'finalAmount',
+      important: true,
       header: 'Final settlement',
       align: 'right',
       sortable: true,
       render: (s) => <span className="font-semibold">{formatINR(s.finalAmount)}</span>,
     },
-    { key: 'status', header: 'Status', render: (s) => <StatusBadge status={s.status} /> },
+    {
+      key: 'status',
+      important: true,
+      header: 'Status',
+      render: (s) => <StatusBadge status={s.status} />,
+    },
     {
       key: 'paymentStatus',
       header: 'Payment',

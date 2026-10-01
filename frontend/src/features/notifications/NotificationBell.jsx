@@ -46,7 +46,8 @@ export default function NotificationBell() {
         aria-haspopup="true"
         aria-expanded={open}
         aria-label={count ? `Notifications, ${count} unread` : 'Notifications'}
-        className="relative rounded-full p-2 text-slate-500 hover:bg-slate-100"
+        title="Notifications"
+        className="relative rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100"
       >
         <Bell className="h-5 w-5" />
         {count > 0 && (
@@ -56,7 +57,7 @@ export default function NotificationBell() {
         )}
       </button>
       {open && (
-        <div className="absolute right-0 z-30 mt-1 w-[min(22rem,calc(100vw-2rem))] rounded-md border border-slate-200 bg-white shadow-lg">
+        <div className="animate-menu absolute right-0 z-30 mt-1 w-[min(22rem,calc(100vw-2rem))] rounded-xl border border-slate-200 bg-white shadow-lg">
           <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2">
             <span className="text-sm font-semibold text-slate-800">Notifications</span>
             {count > 0 && (

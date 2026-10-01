@@ -14,9 +14,9 @@ import {
 import { formatINR, formatMonth } from '../../lib/format';
 
 /** Validated categorical slots (dataviz reference palette, light surface). */
-const SERIES = { received: '#2a78d6', finalized: '#eb6834' };
-const AXIS = { stroke: '#94a3b8', fontSize: 12 };
-const GRID = '#e2e8f0';
+const SERIES = { received: '#0b5f86', finalized: '#d9a03a' };
+const AXIS = { stroke: '#94a3b6', fontSize: 12 };
+const GRID = '#dce5ee';
 
 /** Compact INR for axis ticks only (values in tooltips/tables are exact). */
 function compactINR(value) {
@@ -88,7 +88,7 @@ export function ReceivedVsSettledChart({ months }) {
           />
           <Tooltip
             content={<ChartTooltip labelFormatter={formatMonth} />}
-            cursor={{ fill: '#f1f5f9' }}
+            cursor={{ fill: '#e8eff5' }}
           />
           <Legend wrapperStyle={{ fontSize: 12 }} />
           <Bar
@@ -133,7 +133,7 @@ export function ProfitTrendChart({ trend }) {
             tickLine={false}
             width={64}
           />
-          <ReferenceLine y={0} stroke="#94a3b8" />
+          <ReferenceLine y={0} stroke="#9a9da8" />
           <Tooltip content={<ChartTooltip labelFormatter={formatMonth} />} />
           <Line
             dataKey="lvProfit"
@@ -179,8 +179,8 @@ export function CompanyProfitChart({ companies }) {
             tickLine={false}
             width={120}
           />
-          <ReferenceLine x={0} stroke="#94a3b8" />
-          <Tooltip content={<ChartTooltip />} cursor={{ fill: '#f1f5f9' }} />
+          <ReferenceLine x={0} stroke="#9a9da8" />
+          <Tooltip content={<ChartTooltip />} cursor={{ fill: '#e8eff5' }} />
           <Bar
             dataKey="lvProfit"
             name="LV profit"
